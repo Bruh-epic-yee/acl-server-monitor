@@ -130,7 +130,7 @@ export class ServerManager extends events.EventEmitter {
     const uniqueServersAffected = new Set(machineDrops.map(e => e.serverConfig.id));
     
     // If multiple servers on the same IP saw drops
-    if (uniqueServersAffected.size > 1 && machineDrops.length >= 3) {
+    if (uniqueServersAffected.size > 1 && machineDrops.length >= 10) {
       // Avoid spamming machine level
       if (!triggeringServer.lastMachineAlert || (now - triggeringServer.lastMachineAlert > 60000)) {
         triggeringServer.lastMachineAlert = now;
