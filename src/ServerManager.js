@@ -31,13 +31,19 @@ export class ServerManager extends events.EventEmitter {
       });
 
       analyzer.on('server_reset', (event) => {
-        // Trigger a mass disconnect alert for a server reset
-        this.emit('mass_disconnect_server', {
-          server: config,
-          dropCount: 'ALL (Server Reset)',
-          session: analyzer.currentSession,
-          isReset: true
-        });
+        const now = Date.now();
+        // Prevent duplicate reset alerts within a 60-second window
+        if (!config.lastResetAlert || (now - config.lastResetAlert > 60000)) {
+          config.lastResetAlert = now;
+          
+          // Trigger a mass disconnect alert for a server reset
+          this.emit('mass_disconnect_server', {
+            server: config,
+            dropCount: 'ALL (Server Reset)',
+            session: analyzer.currentSession,
+            isReset: true
+          });
+        }
       });
 
       this.monitors.set(config.id, { ftp, analyzer });
