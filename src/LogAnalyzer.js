@@ -84,7 +84,9 @@ export class LogAnalyzer extends events.EventEmitter {
     }
 
     // Driver disconnection tracking via unique Car IDs
-    const discoMatch = line.match(/Sent car (\d+) disco/);
+    const discoMatch = line.match(/Sent car (\d+) disco/) || 
+                       line.match(/Purging car_id (\d+)/) ||
+                       line.match(/car (\d+) has no driving connection anymore/);
     if (discoMatch) {
       const carId = discoMatch[1];
       if (this.connectedCarIds.has(carId)) {
@@ -103,6 +105,16 @@ export class LogAnalyzer extends events.EventEmitter {
             rawLine: line
           });
         }
+      }
+    }
+
+    // Self-healing mechanism: If the server explicitly says 0 clients, clear all ghost drivers
+    const udpMatch = line.match(/Udp message count \((\d+) clients\)/);
+    if (udpMatch) {
+      const actualClients = parseInt(udpMatch[1], 10);
+      if (actualClients === 0 && this.connectedCarIds.size > 0) {
+        this.connectedCarIds.clear();
+        this.connectedDrivers = 0;
       }
     }
   }
