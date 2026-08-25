@@ -108,9 +108,8 @@ export class ServerManager extends events.EventEmitter {
       now - e.localTime <= this.TIME_WINDOW_MS
     );
 
-    // If there were multiple drops in 15 seconds AND no one is left on the server
-    // (We require at least 2 drops to trigger this, otherwise it's just the last person leaving a 1-player lobby normally)
-    if (serverDrops.length >= 2 && activeDriversRemaining === 0) {
+    // If 10 or more drivers drop within 15 seconds, it's a mass disconnect (regardless of if anyone remains)
+    if (serverDrops.length >= 10) {
       if (!triggeringServer.lastAlerted || (now - triggeringServer.lastAlerted > 60000)) {
         triggeringServer.lastAlerted = now;
         this.emit('mass_disconnect_server', {
