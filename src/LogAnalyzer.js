@@ -9,6 +9,7 @@ export class LogAnalyzer extends events.EventEmitter {
     this.lastProcessedLine = 0;
     this.currentSession = 'Unknown';
     this.connectedDrivers = 0;
+    this.connectedCarIds = new Set();
     this.lastFileSize = 0;
   }
 
@@ -58,6 +59,7 @@ export class LogAnalyzer extends events.EventEmitter {
     
     // Explicit server restart line in ACC
     if (line.includes('Server starting') || line.includes('Server reset')) {
+      this.connectedCarIds.clear();
       this.connectedDrivers = 0;
       this.emit('server_reset', {
         serverId: this.serverId,
@@ -65,30 +67,38 @@ export class LogAnalyzer extends events.EventEmitter {
       });
     }
 
-    // Driver connection tracking
-    if (line.toLowerCase().includes('new connection') || line.includes('has connected')) {
-      this.connectedDrivers++;
+    // Driver connection tracking via unique Car IDs
+    const carConnMatch = line.match(/(?:Creating new car connection|Recognized reconnect): carId (\d+)/);
+    if (carConnMatch) {
+      this.connectedCarIds.add(carConnMatch[1]);
+      this.connectedDrivers = this.connectedCarIds.size;
     }
 
-    // Driver disconnection tracking
-    if (line.toLowerCase().includes('disconnected') || line.toLowerCase().includes('connection closed')) {
-      this.connectedDrivers = Math.max(0, this.connectedDrivers - 1);
-      
-      const timeMatch = line.match(/^\[(.*?)\]/) || [null, new Date().toISOString()];
-      const timestamp = timeMatch[1];
-      
-      this.emit('driver_disconnect', {
-        serverId: this.serverId,
-        timestamp: timestamp || new Date().toISOString(),
-        session: this.currentSession,
-        activeDrivers: this.connectedDrivers,
-        rawLine: line
-      });
+    // Driver disconnection tracking via unique Car IDs
+    const discoMatch = line.match(/Sent car (\d+) disco/);
+    if (discoMatch) {
+      const carId = discoMatch[1];
+      if (this.connectedCarIds.has(carId)) {
+        this.connectedCarIds.delete(carId);
+        this.connectedDrivers = this.connectedCarIds.size;
+        
+        const timeMatch = line.match(/^\[(.*?)\]/) || [null, new Date().toISOString()];
+        const timestamp = timeMatch[1];
+        
+        this.emit('driver_disconnect', {
+          serverId: this.serverId,
+          timestamp: timestamp || new Date().toISOString(),
+          session: this.currentSession,
+          activeDrivers: this.connectedDrivers,
+          rawLine: line
+        });
+      }
     }
   }
 
   reset() {
     this.lastProcessedLine = 0;
+    this.connectedCarIds.clear();
     this.connectedDrivers = 0;
     this.lastFileSize = 0;
   }
