@@ -108,7 +108,8 @@ export class ServerManager extends events.EventEmitter {
       now - e.localTime <= this.TIME_WINDOW_MS
     );
 
-    // If 10 or more drivers drop within 15 seconds, it's a mass disconnect (regardless of if anyone remains)
+    // [DISABLED PER USER REQUEST] - Only alert on Server Resets for now
+    /*
     if (serverDrops.length >= 10) {
       if (!triggeringServer.lastAlerted || (now - triggeringServer.lastAlerted > 60000)) {
         triggeringServer.lastAlerted = now;
@@ -120,6 +121,7 @@ export class ServerManager extends events.EventEmitter {
         });
       }
     }
+    */
 
     // 2. Machine-level mass disconnect 
     const machineDrops = this.disconnectEvents.filter(e => 
