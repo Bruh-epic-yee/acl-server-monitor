@@ -65,7 +65,11 @@ manager.on('mass_disconnect_server', async (data) => {
     )
     .setTimestamp();
 
-  channel.send({ embeds: [embed] });
+  try {
+    await channel.send({ embeds: [embed] });
+  } catch (err) {
+    console.error('❌ Failed to send Discord alert. Check bot permissions in that channel:', err.message);
+  }
 });
 
 // Send an alert when a Machine-level mass disconnect occurs (Multiple servers on same IP)
@@ -89,7 +93,11 @@ manager.on('mass_disconnect_machine', async (data) => {
     .setTimestamp();
 
   // You can ping a specific role by adding `<@&ROLE_ID>` to the message content
-  channel.send({ content: '@here', embeds: [embed] });
+  try {
+    await channel.send({ content: '@here', embeds: [embed] });
+  } catch (err) {
+    console.error('❌ Failed to send Discord alert. Check bot permissions in that channel:', err.message);
+  }
 });
 
 // Send an alert when an FTP server goes offline entirely
@@ -112,7 +120,11 @@ manager.on('ftp_offline', async (data) => {
     )
     .setTimestamp();
 
-  channel.send({ embeds: [embed] });
+  try {
+    await channel.send({ embeds: [embed] });
+  } catch (err) {
+    console.error('❌ Failed to send Discord alert. Check bot permissions in that channel:', err.message);
+  }
 });
 
 // Simple command to check status
