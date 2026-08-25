@@ -101,9 +101,20 @@ client.on('messageCreate', async (message) => {
   }
 });
 
+import http from 'http';
+
 if (!TOKEN) {
   console.error("❌ ERROR: DISCORD_TOKEN is missing in the .env file.");
   process.exit(1);
 }
 
 client.login(TOKEN);
+
+// Add a dummy HTTP server to satisfy Railway's port binding health check
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('ACL Server Monitor Bot is running!\n');
+}).listen(PORT, () => {
+  console.log(`🌐 Dummy web server listening on port ${PORT} for Railway health checks.`);
+});
