@@ -1,0 +1,466 @@
+[
+  {
+    "id": "01",
+    "host": "176.57.168.164",
+    "port": 36321,
+    "user": "gpftp31028601802889233",
+    "password": "g1FK09Rp",
+    "track": "monza"
+  },
+  {
+    "id": "02",
+    "host": "176.57.169.53",
+    "port": 29921,
+    "user": "gpftp31028601802890033",
+    "password": "UAbbPalf",
+    "track": "barcelona"
+  },
+  {
+    "id": "03",
+    "host": "176.57.168.81",
+    "port": 29721,
+    "user": "gpftp31028601802890133",
+    "password": "1omRQbTX",
+    "track": "nurburgring"
+  },
+  {
+    "id": "04",
+    "host": "176.57.168.77",
+    "port": 28521,
+    "user": "gpftp31028601802890233",
+    "password": "BONEKMV5",
+    "track": "spa"
+  },
+  {
+    "id": "05",
+    "host": "176.57.169.53",
+    "port": 31421,
+    "user": "gpftp31028601802890333",
+    "password": "QKBG77eU",
+    "track": "brands_hatch"
+  },
+  {
+    "id": "06",
+    "host": "176.57.168.81",
+    "port": 34821,
+    "user": "gpftp31028601802890433",
+    "password": "Euql5Ebt",
+    "track": "cota"
+  },
+  {
+    "id": "07",
+    "host": "176.57.168.81",
+    "port": 31821,
+    "user": "gpftp31028601802890533",
+    "password": "qmXvAcMz",
+    "track": "donington"
+  },
+  {
+    "id": "08",
+    "host": "176.57.169.53",
+    "port": 31521,
+    "user": "gpftp31028601802890633",
+    "password": "jrqvxPDE",
+    "track": "hungaroring"
+  },
+  {
+    "id": "09",
+    "host": "176.57.168.78",
+    "port": 36121,
+    "user": "gpftp31028601802896233",
+    "password": "ivvwQl1n",
+    "track": "imola"
+  },
+  {
+    "id": "10",
+    "host": "176.57.168.81",
+    "port": 34721,
+    "user": "gpftp31028601802896633",
+    "password": "Xvi9MxhO",
+    "track": "indianapolis"
+  },
+  {
+    "id": "11",
+    "host": "176.57.174.184",
+    "port": 30021,
+    "user": "gpftp31028601802896733",
+    "password": "iLmpAr3t",
+    "track": "kyalami"
+  },
+  {
+    "id": "12",
+    "host": "176.57.169.53",
+    "port": 31721,
+    "user": "gpftp31028601802896833",
+    "password": "72u60ujh",
+    "track": "laguna_seca"
+  },
+  {
+    "id": "13",
+    "host": "176.57.168.78",
+    "port": 36021,
+    "user": "gpftp31028601802896933",
+    "password": "xKoMImuz",
+    "track": "misano"
+  },
+  {
+    "id": "14",
+    "host": "176.57.168.164",
+    "port": 36421,
+    "user": "gpftp31028601802897033",
+    "password": "UCGoLgq8",
+    "track": "mount_panorama"
+  },
+  {
+    "id": "15",
+    "host": "176.57.168.77",
+    "port": 31821,
+    "user": "gpftp31028601802897133",
+    "password": "GSkyf2W6",
+    "track": "oulton_park"
+  },
+  {
+    "id": "16",
+    "host": "176.57.174.184",
+    "port": 31321,
+    "user": "gpftp31028601802897233",
+    "password": "2v3FazH4",
+    "track": "paul_ricard"
+  },
+  {
+    "id": "17",
+    "host": "176.57.168.164",
+    "port": 36521,
+    "user": "gpftp31028601802897333",
+    "password": "1BYpd7uh",
+    "track": "silverstone"
+  },
+  {
+    "id": "18",
+    "host": "176.57.174.137",
+    "port": 29821,
+    "user": "gpftp31028601802897933",
+    "password": "LwiOnGqU",
+    "track": "snetterton"
+  },
+  {
+    "id": "19",
+    "host": "176.57.168.77",
+    "port": 36121,
+    "user": "gpftp31028601802898033",
+    "password": "szs5Fik0",
+    "track": "suzuka"
+  },
+  {
+    "id": "20",
+    "host": "176.57.168.81",
+    "port": 33221,
+    "user": "gpftp31028601802898933",
+    "password": "zdtSIl4H",
+    "track": "valencia"
+  },
+  {
+    "id": "21",
+    "host": "176.57.174.184",
+    "port": 35021,
+    "user": "gpftp31028601802899333",
+    "password": "GUe8dxi5",
+    "track": "watkins_glen"
+  },
+  {
+    "id": "22",
+    "host": "176.57.168.78",
+    "port": 32821,
+    "user": "gpftp31028601802899433",
+    "password": "ZXJqV8fz",
+    "track": "zandvoort"
+  },
+  {
+    "id": "23",
+    "host": "176.57.168.77",
+    "port": 32821,
+    "user": "gpftp31028601802899533",
+    "password": "PaCjKjtr",
+    "track": "zolder"
+  },
+  {
+    "id": "24",
+    "host": "176.57.168.164",
+    "port": 36621,
+    "user": "gpftp31028601802899633",
+    "password": "JaSqmnek",
+    "track": "red_bull_ring"
+  },
+  {
+    "id": "25",
+    "host": "176.57.168.77",
+    "port": 36421,
+    "user": "gpftp31028601802899733",
+    "password": "2xbANH9B",
+    "track": "nurburgring_24h"
+  },
+  {
+    "id": "26",
+    "host": "176.57.174.137",
+    "port": 31221,
+    "user": "gpftp31028601802900133",
+    "password": "MYiJfQsP",
+    "track": "monza"
+  },
+  {
+    "id": "27",
+    "host": "176.57.169.53",
+    "port": 33521,
+    "user": "gpftp31028601802900533",
+    "password": "qBZUqTuM",
+    "track": "Monza"
+  },
+  {
+    "id": "28",
+    "host": "176.57.174.147",
+    "port": 28221,
+    "user": "gpftp31028601841606433",
+    "password": "b2TAmcdM",
+    "track": "Spa"
+  },
+  {
+    "id": "29",
+    "host": "176.57.169.53",
+    "port": 34821,
+    "user": "gpftp31028601802901233",
+    "password": "nWkX7hV6",
+    "track": "Spa"
+  },
+  {
+    "id": "30",
+    "host": "176.57.174.184",
+    "port": 36321,
+    "user": "gpftp31028601802901633",
+    "password": "tDFWgkxo",
+    "track": "silverstone"
+  },
+  {
+    "id": "32",
+    "host": "176.57.169.53",
+    "port": 34721,
+    "user": "gpftp31028601802902333",
+    "password": "2uAp4fGq",
+    "track": "paul_ricard"
+  },
+  {
+    "id": "33",
+    "host": "176.57.174.137",
+    "port": 36421,
+    "user": "gpftp31028601802902433",
+    "password": "1o4CngEs",
+    "track": "brands_hatch"
+  },
+  {
+    "id": "34",
+    "host": "176.57.174.147",
+    "port": 34921,
+    "user": "gpftp31028601802902533",
+    "password": "rMS9IFve",
+    "track": "barcelona"
+  },
+  {
+    "id": "35",
+    "host": "176.57.168.181",
+    "port": 28121,
+    "user": "gpftp31028601802902633",
+    "password": "iZNFC9kk",
+    "track": "silverstone"
+  },
+  {
+    "id": "36",
+    "host": "176.57.169.53",
+    "port": 36221,
+    "user": "gpftp31028601802902733",
+    "password": "BxGpqugI",
+    "track": "nurburgring"
+  },
+  {
+    "id": "38",
+    "host": "83.223.203.126",
+    "port": 31321,
+    "user": "gpftp1085013338548212",
+    "password": "5quWzXHM",
+    "track": "Suzuka"
+  },
+  {
+    "id": "39",
+    "host": "176.57.174.137",
+    "port": 31321,
+    "user": "gpftp31028601802903333",
+    "password": "xOn1ZnU0",
+    "track": "spa"
+  },
+  {
+    "id": "39B",
+    "host": "176.57.168.81",
+    "port": 31421,
+    "user": "gpftp31028601841606533",
+    "password": "1CuDsMQ4",
+    "track": "schedule"
+  },
+  {
+    "id": "40",
+    "host": "176.57.174.184",
+    "port": 29821,
+    "user": "gpftp31028601843066533",
+    "password": "1iYMbu3f",
+    "track": "monza"
+  },
+  {
+    "id": "40B",
+    "host": "176.57.168.77",
+    "port": 34621,
+    "user": "gpftp31028601802903233",
+    "password": "cj4SNY3pduQtoiQt563HcaWS",
+    "track": "schedule"
+  },
+  {
+    "id": "41",
+    "host": "83.223.204.92",
+    "port": 35121,
+    "user": "gpftp1085013338283412",
+    "password": "ao6ZpqcR",
+    "track": "monza"
+  },
+  {
+    "id": "42",
+    "host": "83.223.203.126",
+    "port": 31821,
+    "user": "gpftp1085013338284312",
+    "password": "ZXH1wnbl",
+    "track": "spa"
+  },
+  {
+    "id": "44",
+    "host": "83.223.203.126",
+    "port": 31721,
+    "user": "gpftp1085013338532812",
+    "password": "Sa8isPfN",
+    "track": "nurburgring_24h"
+  },
+  {
+    "id": "45",
+    "host": "83.223.204.92",
+    "port": 36421,
+    "user": "gpftp1085013338533312",
+    "password": "ivjXu3Be",
+    "track": "cota"
+  },
+  {
+    "id": "46",
+    "host": "83.223.203.126",
+    "port": 31621,
+    "user": "gpftp1085013338533412",
+    "password": "S8wIbzrc",
+    "track": "watkins_glen"
+  },
+  {
+    "id": "47",
+    "host": "83.223.203.126",
+    "port": 31521,
+    "user": "gpftp1085013338533512",
+    "password": "a7FDr9UQ",
+    "track": "Imola"
+  },
+  {
+    "id": "48",
+    "host": "83.223.204.92",
+    "port": 36521,
+    "user": "gpftp1085013338533612",
+    "password": "SvQBWrwn",
+    "track": "laguna_seca"
+  },
+  {
+    "id": "49",
+    "host": "83.223.203.126",
+    "port": 31421,
+    "user": "gpftp1085013338547612",
+    "password": "KvGTfvUz",
+    "track": "mount_panorama"
+  },
+  {
+    "id": "53",
+    "host": "83.223.203.126",
+    "port": 28721,
+    "user": "gpftp1085013361522712",
+    "password": "fyj2u1Ci",
+    "track": "\u2014"
+  },
+  {
+    "id": "80",
+    "host": "83.223.204.92",
+    "port": 36121,
+    "user": "gpftp858826338449012",
+    "password": "6NyWk9Ne",
+    "track": "Ps5 only"
+  },
+  {
+    "id": "81",
+    "host": "83.223.204.92",
+    "port": 37721,
+    "user": "gpftp858826338587312",
+    "password": "yO2Ntwqx",
+    "track": "Ps5 only"
+  },
+  {
+    "id": "81",
+    "host": "83.223.204.92",
+    "port": 36321,
+    "user": "gpftp858826338458212",
+    "password": "jcgInCIT",
+    "track": "Ps5 only"
+  },
+  {
+    "id": "82",
+    "host": "83.223.204.92",
+    "port": 37621,
+    "user": "gpftp858826338587212",
+    "password": "qauhLr3t",
+    "track": "Ps5 only"
+  },
+  {
+    "id": "90",
+    "host": "83.223.204.92",
+    "port": 29821,
+    "user": "gpftp1085013339027912",
+    "password": "mrp0h2V3",
+    "track": "\u2014"
+  },
+  {
+    "id": "92",
+    "host": "83.223.204.92",
+    "port": 37921,
+    "user": "gpftp1085013339809512",
+    "password": "bt7AaVoq",
+    "track": "\u2014"
+  },
+  {
+    "id": "93",
+    "host": "83.223.204.92",
+    "port": 36621,
+    "user": "gpftp1085013338548912",
+    "password": "qLC5BxFn",
+    "track": "\u2014"
+  },
+  {
+    "id": "37",
+    "host": "176.57.135.34",
+    "port": 31221,
+    "user": "gpftp1085013338137571",
+    "password": "I1OEmiC2",
+    "track": "monza"
+  },
+  {
+    "id": "99A",
+    "host": "176.57.174.184",
+    "port": 36521,
+    "user": "gpftp31028601802903133",
+    "password": "7svCiKLC",
+    "track": "time trial"
+  }
+]
