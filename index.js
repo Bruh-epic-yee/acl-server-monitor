@@ -199,6 +199,20 @@ client.on('messageCreate', async (message) => {
       
     message.reply({ embeds: [embed] });
   }
+
+  if (message.content.toLowerCase().startsWith('!addcrash')) {
+    const args = message.content.toLowerCase().split(' ');
+    if (args.length === 3) {
+      const serverId = args[1]; // e.g. "acl82"
+      const count = parseInt(args[2], 10);
+      if (!isNaN(count)) {
+        if (!serverStats[serverId]) serverStats[serverId] = 0;
+        serverStats[serverId] += count;
+        saveStats();
+        message.reply(`✅ Added ${count} crashes to ${serverId}. It now has ${serverStats[serverId]} total crashes.`);
+      }
+    }
+  }
 });
 
 import http from 'http';
