@@ -134,6 +134,28 @@ client.on('messageCreate', async (message) => {
   if (message.content.toLowerCase() === '!status') {
     message.reply(`📡 Currently monitoring ${serverConfigs.length} servers across Germany, US East, and Australia.`);
   }
+
+  if (message.content.toLowerCase() === '!players') {
+    const active = [];
+    let emptyCount = 0;
+
+    for (const [id, monitor] of manager.monitors.entries()) {
+      const drivers = monitor.analyzer.connectedDrivers || 0;
+      if (drivers > 0) {
+        active.push(`- **${monitor.ftp.config.name}**: ${drivers} players`);
+      } else {
+        emptyCount++;
+      }
+    }
+
+    const embed = new EmbedBuilder()
+      .setTitle('📊 Current Server Population')
+      .setColor(0x00FF00)
+      .setDescription(active.length > 0 ? active.join('\n') : 'All servers are currently empty.')
+      .setFooter({ text: `${emptyCount} servers are currently empty.` });
+
+    message.reply({ embeds: [embed] });
+  }
 });
 
 import http from 'http';
