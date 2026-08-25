@@ -53,14 +53,18 @@ export class LogAnalyzer extends events.EventEmitter {
   }
 
   processLine(line) {
-    // Session tracking
-    if (line.includes('New session:')) {
-      const match = line.match(/New session:\s+(\w+)/);
-      if (match) {
-        this.currentSession = match[1];
-        if (!this.isInitialRun) {
-          this.emit('session_change', this.currentSession);
-        }
+    // Session tracking via leaderboard updates
+    const leaderboardMatch = line.match(/Updated leaderboard for \d+ clients \((.+?)-.*? (\d+ min)\)/);
+    if (leaderboardMatch) {
+      const sessionType = leaderboardMatch[1]; // "Qualifying", "Race", "Practice"
+      const timeRemaining = leaderboardMatch[2].replace(' min', 'm'); // "10 min" -> "10m"
+      
+      const initial = sessionType.charAt(0).toLowerCase();
+      const newSessionStr = `${initial} ${timeRemaining}`;
+      
+      if (this.currentSession !== newSessionStr) {
+        this.currentSession = newSessionStr;
+        this.emit('session_change', this.currentSession);
       }
     }
     

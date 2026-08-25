@@ -45,7 +45,7 @@ function saveStats() {
 const serverConfigs = rawServers.map(s => ({
   id: `acl${s.id}`,
   name: `ACL ${s.id} (${s.track || 'Unknown'})`,
-  region: 'Unknown (Check IP)',
+  region: s.region || 'Unknown (Check IP)',
   machineIp: s.host,
   ftp: {
     host: s.host,
