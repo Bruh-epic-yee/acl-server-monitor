@@ -92,6 +92,29 @@ manager.on('mass_disconnect_machine', async (data) => {
   channel.send({ content: '@here', embeds: [embed] });
 });
 
+// Send an alert when an FTP server goes offline entirely
+manager.on('ftp_offline', async (data) => {
+  console.log(`[ALERT] FTP OFFLINE on ${data.server.name}`);
+  if (!ALERT_CHANNEL_ID) return;
+
+  const channel = await client.channels.fetch(ALERT_CHANNEL_ID).catch(() => null);
+  if (!channel) return;
+
+  const embed = new EmbedBuilder()
+    .setTitle('⚠️ FTP Server Offline Alert')
+    .setColor(0xFFA500) // Orange
+    .setDescription(`Failed to connect to the FTP server after 3 attempts.`)
+    .addFields(
+      { name: 'Server', value: data.server.name, inline: true },
+      { name: 'Region', value: data.server.region, inline: true },
+      { name: 'Machine IP', value: data.server.machineIp, inline: false },
+      { name: 'Error', value: data.error, inline: false }
+    )
+    .setTimestamp();
+
+  channel.send({ embeds: [embed] });
+});
+
 // Simple command to check status
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;

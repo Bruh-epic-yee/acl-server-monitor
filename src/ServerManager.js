@@ -55,9 +55,24 @@ export class ServerManager extends events.EventEmitter {
     const monitor = this.monitors.get(serverId);
     if (!monitor) return;
 
-    const logPath = await monitor.ftp.syncLogFile();
-    if (logPath) {
-      await monitor.analyzer.analyze(logPath);
+    const result = await monitor.ftp.syncLogFile();
+    if (result && result.success) {
+      await monitor.analyzer.analyze(result.logPath);
+      
+      // If it came back online after being offline, we can reset the counter
+      monitor.offlineCount = 0;
+      monitor.offlineAlertSent = false;
+    } else if (result && !result.success) {
+      monitor.offlineCount = (monitor.offlineCount || 0) + 1;
+      
+      // If it fails 3 times in a row (approx 45 seconds), emit an alert
+      if (monitor.offlineCount >= 3 && !monitor.offlineAlertSent) {
+        monitor.offlineAlertSent = true;
+        this.emit('ftp_offline', {
+          server: monitor.ftp.config,
+          error: result.error
+        });
+      }
     }
 
     setTimeout(() => this.startPolling(serverId), 15000);

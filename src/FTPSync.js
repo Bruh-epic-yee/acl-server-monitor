@@ -41,14 +41,14 @@ export class FTPSync {
       
       this.isSyncing = false;
       client.close();
-      return localLogPath;
+      return { success: true, logPath: localLogPath };
 
     } catch (error) {
       // It's normal for some servers to be offline, so we handle gracefully
       // console.error(`[FTPSync] Failed to sync ${this.config.id}:`, error.message);
       this.isSyncing = false;
       client.close();
-      return null;
+      return { success: false, error: error.message };
     }
   }
 }
