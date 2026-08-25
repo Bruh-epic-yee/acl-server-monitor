@@ -105,8 +105,8 @@
   },
   {
     "id": "14",
-    "host": "176.57.168.164",
-    "port": 36421,
+    "host": "176.57.168.77",
+    "port": 29921,
     "user": "gpftp31028601802897033",
     "password": "UCGoLgq8",
     "track": "mount_panorama"
@@ -129,8 +129,8 @@
   },
   {
     "id": "17",
-    "host": "176.57.168.164",
-    "port": 36521,
+    "host": "176.57.169.53",
+    "port": 33121,
     "user": "gpftp31028601802897333",
     "password": "1BYpd7uh",
     "track": "silverstone"
@@ -185,8 +185,8 @@
   },
   {
     "id": "24",
-    "host": "176.57.168.164",
-    "port": 36621,
+    "host": "176.57.174.137",
+    "port": 31921,
     "user": "gpftp31028601802899633",
     "password": "JaSqmnek",
     "track": "red_bull_ring"
