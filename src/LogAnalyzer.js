@@ -76,6 +76,13 @@ export class LogAnalyzer extends events.EventEmitter {
       }
     }
 
+    // Dynamic track detection
+    const trackMatch = line.match(/Track (\w+) was set and updated/);
+    if (trackMatch) {
+      this.currentTrack = trackMatch[1];
+      this.emit('track_change', this.currentTrack);
+    }
+
     // Driver connection tracking via unique Car IDs
     const carConnMatch = line.match(/(?:Creating new car connection|Recognized reconnect): carId (\d+)/);
     if (carConnMatch) {

@@ -30,6 +30,10 @@ export class ServerManager extends events.EventEmitter {
         this.handleDisconnect(config, event, analyzer.connectedDrivers);
       });
 
+      analyzer.on('track_change', (trackName) => {
+        config.name = `ACL ${config.id.replace('acl', '')} (${trackName})`;
+      });
+
       analyzer.on('server_reset', (event) => {
         const now = Date.now();
         // Prevent duplicate reset alerts within a 60-second window
