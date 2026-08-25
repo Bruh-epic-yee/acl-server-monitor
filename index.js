@@ -69,12 +69,10 @@ client.on('ready', () => {
 manager.on('mass_disconnect_server', async (data) => {
   console.log(`[ALERT] Mass disconnect on ${data.server.name}`);
   
-  if (!data.isReset) {
-    const id = data.server.id;
-    if (!serverStats[id]) serverStats[id] = 0;
-    serverStats[id]++;
-    saveStats();
-  }
+  const id = data.server.id;
+  if (!serverStats[id]) serverStats[id] = 0;
+  serverStats[id]++;
+  saveStats();
 
   if (!ALERT_CHANNEL_ID) return;
 
