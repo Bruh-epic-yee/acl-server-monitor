@@ -21,6 +21,26 @@ try {
   process.exit(1);
 }
 
+// Load persistent stats for disconnect tallies
+const STATS_FILE = './data/stats.json';
+let serverStats = {};
+try {
+  if (fs.existsSync(STATS_FILE)) {
+    serverStats = JSON.parse(fs.readFileSync(STATS_FILE, 'utf-8'));
+  }
+} catch (e) {
+  console.error("⚠️ Failed to load stats file, starting fresh.");
+}
+
+function saveStats() {
+  try {
+    if (!fs.existsSync('./data')) fs.mkdirSync('./data', { recursive: true });
+    fs.writeFileSync(STATS_FILE, JSON.stringify(serverStats, null, 2));
+  } catch (e) {
+    console.error("⚠️ Failed to save stats file:", e.message);
+  }
+}
+
 // Map the old format to the new monitor format
 const serverConfigs = rawServers.map(s => ({
   id: `acl${s.id}`,
@@ -48,6 +68,14 @@ client.on('ready', () => {
 // Send an alert when a Single Server mass disconnects
 manager.on('mass_disconnect_server', async (data) => {
   console.log(`[ALERT] Mass disconnect on ${data.server.name}`);
+  
+  if (!data.isReset) {
+    const id = data.server.id;
+    if (!serverStats[id]) serverStats[id] = 0;
+    serverStats[id]++;
+    saveStats();
+  }
+
   if (!ALERT_CHANNEL_ID) return;
 
   const channel = await client.channels.fetch(ALERT_CHANNEL_ID).catch(() => null);
@@ -148,12 +176,29 @@ client.on('messageCreate', async (message) => {
       }
     }
 
-    const embed = new EmbedBuilder()
+      const embed = new EmbedBuilder()
       .setTitle('📊 Current Server Population')
       .setColor(0x00FF00)
       .setDescription(active.length > 0 ? active.join('\n') : 'All servers are currently empty.')
       .setFooter({ text: `${emptyCount} servers are currently empty.` });
 
+    message.reply({ embeds: [embed] });
+  }
+
+  if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes') {
+    const leaderboard = Object.entries(serverStats)
+      .sort((a, b) => b[1] - a[1]) // Sort descending by count
+      .map(([id, count]) => {
+        const config = serverConfigs.find(s => s.id === id);
+        const name = config ? config.name : id;
+        return `- **${name}**: ${count} disconnects`;
+      });
+      
+    const embed = new EmbedBuilder()
+      .setTitle('📈 Server Disconnect Tally')
+      .setColor(0xFFA500)
+      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No mass disconnects recorded yet! 🎉')
+      
     message.reply({ embeds: [embed] });
   }
 });
