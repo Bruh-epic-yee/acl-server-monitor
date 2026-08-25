@@ -5,7 +5,8 @@
     "port": 35121,
     "user": "gpftp31028601802889233",
     "password": "g1FK09Rp",
-    "track": "monza"
+    "track": "monza",
+    "region": "EU"
   },
   {
     "id": "02",
@@ -13,7 +14,8 @@
     "port": 29921,
     "user": "gpftp31028601802890033",
     "password": "UAbbPalf",
-    "track": "barcelona"
+    "track": "barcelona",
+    "region": "EU"
   },
   {
     "id": "03",
@@ -21,7 +23,8 @@
     "port": 29721,
     "user": "gpftp31028601802890133",
     "password": "1omRQbTX",
-    "track": "nurburgring"
+    "track": "nurburgring",
+    "region": "EU"
   },
   {
     "id": "04",
@@ -29,7 +32,8 @@
     "port": 28521,
     "user": "gpftp31028601802890233",
     "password": "BONEKMV5",
-    "track": "spa"
+    "track": "spa",
+    "region": "EU"
   },
   {
     "id": "05",
@@ -37,7 +41,8 @@
     "port": 31421,
     "user": "gpftp31028601802890333",
     "password": "QKBG77eU",
-    "track": "brands_hatch"
+    "track": "brands_hatch",
+    "region": "EU"
   },
   {
     "id": "06",
@@ -45,7 +50,8 @@
     "port": 34821,
     "user": "gpftp31028601802890433",
     "password": "Euql5Ebt",
-    "track": "cota"
+    "track": "cota",
+    "region": "EU"
   },
   {
     "id": "07",
@@ -53,7 +59,8 @@
     "port": 31821,
     "user": "gpftp31028601802890533",
     "password": "qmXvAcMz",
-    "track": "donington"
+    "track": "donington",
+    "region": "EU"
   },
   {
     "id": "08",
@@ -61,7 +68,8 @@
     "port": 31521,
     "user": "gpftp31028601802890633",
     "password": "jrqvxPDE",
-    "track": "hungaroring"
+    "track": "hungaroring",
+    "region": "EU"
   },
   {
     "id": "09",
@@ -69,7 +77,8 @@
     "port": 36121,
     "user": "gpftp31028601802896233",
     "password": "ivvwQl1n",
-    "track": "imola"
+    "track": "imola",
+    "region": "EU"
   },
   {
     "id": "10",
@@ -77,7 +86,8 @@
     "port": 34721,
     "user": "gpftp31028601802896633",
     "password": "Xvi9MxhO",
-    "track": "indianapolis"
+    "track": "indianapolis",
+    "region": "EU"
   },
   {
     "id": "11",
@@ -85,7 +95,8 @@
     "port": 30021,
     "user": "gpftp31028601802896733",
     "password": "iLmpAr3t",
-    "track": "kyalami"
+    "track": "kyalami",
+    "region": "EU"
   },
   {
     "id": "12",
@@ -93,7 +104,8 @@
     "port": 31721,
     "user": "gpftp31028601802896833",
     "password": "72u60ujh",
-    "track": "laguna_seca"
+    "track": "laguna_seca",
+    "region": "EU"
   },
   {
     "id": "13",
@@ -101,7 +113,8 @@
     "port": 36021,
     "user": "gpftp31028601802896933",
     "password": "xKoMImuz",
-    "track": "misano"
+    "track": "misano",
+    "region": "EU"
   },
   {
     "id": "14",
@@ -109,7 +122,8 @@
     "port": 29921,
     "user": "gpftp31028601802897033",
     "password": "UCGoLgq8",
-    "track": "mount_panorama"
+    "track": "mount_panorama",
+    "region": "EU"
   },
   {
     "id": "15",
@@ -117,7 +131,8 @@
     "port": 31821,
     "user": "gpftp31028601802897133",
     "password": "GSkyf2W6",
-    "track": "oulton_park"
+    "track": "oulton_park",
+    "region": "EU"
   },
   {
     "id": "16",
@@ -125,7 +140,8 @@
     "port": 31321,
     "user": "gpftp31028601802897233",
     "password": "2v3FazH4",
-    "track": "paul_ricard"
+    "track": "paul_ricard",
+    "region": "EU"
   },
   {
     "id": "17",
@@ -133,7 +149,8 @@
     "port": 33121,
     "user": "gpftp31028601802897333",
     "password": "1BYpd7uh",
-    "track": "silverstone"
+    "track": "silverstone",
+    "region": "EU"
   },
   {
     "id": "18",
@@ -141,7 +158,8 @@
     "port": 29821,
     "user": "gpftp31028601802897933",
     "password": "LwiOnGqU",
-    "track": "snetterton"
+    "track": "snetterton",
+    "region": "EU"
   },
   {
     "id": "19",
@@ -149,7 +167,8 @@
     "port": 36121,
     "user": "gpftp31028601802898033",
     "password": "szs5Fik0",
-    "track": "suzuka"
+    "track": "suzuka",
+    "region": "EU"
   },
   {
     "id": "20",
@@ -157,7 +176,8 @@
     "port": 33221,
     "user": "gpftp31028601802898933",
     "password": "zdtSIl4H",
-    "track": "valencia"
+    "track": "valencia",
+    "region": "EU"
   },
   {
     "id": "21",
@@ -165,7 +185,8 @@
     "port": 35021,
     "user": "gpftp31028601802899333",
     "password": "GUe8dxi5",
-    "track": "watkins_glen"
+    "track": "watkins_glen",
+    "region": "EU"
   },
   {
     "id": "22",
@@ -173,7 +194,8 @@
     "port": 32821,
     "user": "gpftp31028601802899433",
     "password": "ZXJqV8fz",
-    "track": "zandvoort"
+    "track": "zandvoort",
+    "region": "EU"
   },
   {
     "id": "23",
@@ -181,7 +203,8 @@
     "port": 32821,
     "user": "gpftp31028601802899533",
     "password": "PaCjKjtr",
-    "track": "zolder"
+    "track": "zolder",
+    "region": "EU"
   },
   {
     "id": "24",
@@ -189,7 +212,8 @@
     "port": 31921,
     "user": "gpftp31028601802899633",
     "password": "JaSqmnek",
-    "track": "red_bull_ring"
+    "track": "red_bull_ring",
+    "region": "EU"
   },
   {
     "id": "25",
@@ -197,7 +221,8 @@
     "port": 36421,
     "user": "gpftp31028601802899733",
     "password": "2xbANH9B",
-    "track": "nurburgring_24h"
+    "track": "nurburgring_24h",
+    "region": "EU"
   },
   {
     "id": "26",
@@ -205,7 +230,8 @@
     "port": 31221,
     "user": "gpftp31028601802900133",
     "password": "MYiJfQsP",
-    "track": "monza"
+    "track": "monza",
+    "region": "EU"
   },
   {
     "id": "27",
@@ -213,7 +239,8 @@
     "port": 33521,
     "user": "gpftp31028601802900533",
     "password": "qBZUqTuM",
-    "track": "Monza"
+    "track": "Monza",
+    "region": "EU"
   },
   {
     "id": "28",
@@ -221,7 +248,8 @@
     "port": 28221,
     "user": "gpftp31028601841606433",
     "password": "b2TAmcdM",
-    "track": "Spa"
+    "track": "Spa",
+    "region": "EU"
   },
   {
     "id": "29",
@@ -229,7 +257,8 @@
     "port": 34821,
     "user": "gpftp31028601802901233",
     "password": "nWkX7hV6",
-    "track": "Spa"
+    "track": "Spa",
+    "region": "EU"
   },
   {
     "id": "30",
@@ -237,7 +266,8 @@
     "port": 36321,
     "user": "gpftp31028601802901633",
     "password": "tDFWgkxo",
-    "track": "silverstone"
+    "track": "silverstone",
+    "region": "EU"
   },
   {
     "id": "32",
@@ -245,7 +275,8 @@
     "port": 34721,
     "user": "gpftp31028601802902333",
     "password": "2uAp4fGq",
-    "track": "paul_ricard"
+    "track": "paul_ricard",
+    "region": "EU"
   },
   {
     "id": "33",
@@ -253,7 +284,8 @@
     "port": 36421,
     "user": "gpftp31028601802902433",
     "password": "1o4CngEs",
-    "track": "brands_hatch"
+    "track": "brands_hatch",
+    "region": "EU"
   },
   {
     "id": "34",
@@ -261,7 +293,8 @@
     "port": 34921,
     "user": "gpftp31028601802902533",
     "password": "rMS9IFve",
-    "track": "barcelona"
+    "track": "barcelona",
+    "region": "EU"
   },
   {
     "id": "35",
@@ -269,7 +302,8 @@
     "port": 28121,
     "user": "gpftp31028601802902633",
     "password": "iZNFC9kk",
-    "track": "silverstone"
+    "track": "silverstone",
+    "region": "EU"
   },
   {
     "id": "36",
@@ -277,7 +311,8 @@
     "port": 36221,
     "user": "gpftp31028601802902733",
     "password": "BxGpqugI",
-    "track": "nurburgring"
+    "track": "nurburgring",
+    "region": "EU"
   },
   {
     "id": "38",
@@ -285,7 +320,8 @@
     "port": 31321,
     "user": "gpftp1085013338548212",
     "password": "5quWzXHM",
-    "track": "Suzuka"
+    "track": "Suzuka",
+    "region": "US"
   },
   {
     "id": "39",
@@ -293,7 +329,8 @@
     "port": 31321,
     "user": "gpftp31028601802903333",
     "password": "xOn1ZnU0",
-    "track": "spa"
+    "track": "spa",
+    "region": "EU"
   },
   {
     "id": "39B",
@@ -301,7 +338,8 @@
     "port": 31421,
     "user": "gpftp31028601841606533",
     "password": "1CuDsMQ4",
-    "track": "schedule"
+    "track": "schedule",
+    "region": "EU"
   },
   {
     "id": "40",
@@ -309,7 +347,8 @@
     "port": 29821,
     "user": "gpftp31028601843066533",
     "password": "1iYMbu3f",
-    "track": "monza"
+    "track": "monza",
+    "region": "EU"
   },
   {
     "id": "40B",
@@ -317,7 +356,8 @@
     "port": 34621,
     "user": "gpftp31028601802903233",
     "password": "cj4SNY3pduQtoiQt563HcaWS",
-    "track": "schedule"
+    "track": "schedule",
+    "region": "EU"
   },
   {
     "id": "41",
@@ -325,7 +365,8 @@
     "port": 35121,
     "user": "gpftp1085013338283412",
     "password": "ao6ZpqcR",
-    "track": "monza"
+    "track": "monza",
+    "region": "US"
   },
   {
     "id": "42",
@@ -333,7 +374,8 @@
     "port": 31821,
     "user": "gpftp1085013338284312",
     "password": "ZXH1wnbl",
-    "track": "spa"
+    "track": "spa",
+    "region": "US"
   },
   {
     "id": "44",
@@ -341,7 +383,8 @@
     "port": 31721,
     "user": "gpftp1085013338532812",
     "password": "Sa8isPfN",
-    "track": "nurburgring_24h"
+    "track": "nurburgring_24h",
+    "region": "US"
   },
   {
     "id": "45",
@@ -349,7 +392,8 @@
     "port": 36421,
     "user": "gpftp1085013338533312",
     "password": "ivjXu3Be",
-    "track": "cota"
+    "track": "cota",
+    "region": "US"
   },
   {
     "id": "46",
@@ -357,7 +401,8 @@
     "port": 31621,
     "user": "gpftp1085013338533412",
     "password": "S8wIbzrc",
-    "track": "watkins_glen"
+    "track": "watkins_glen",
+    "region": "US"
   },
   {
     "id": "47",
@@ -365,7 +410,8 @@
     "port": 31521,
     "user": "gpftp1085013338533512",
     "password": "a7FDr9UQ",
-    "track": "Imola"
+    "track": "Imola",
+    "region": "US"
   },
   {
     "id": "48",
@@ -373,7 +419,8 @@
     "port": 36521,
     "user": "gpftp1085013338533612",
     "password": "SvQBWrwn",
-    "track": "laguna_seca"
+    "track": "laguna_seca",
+    "region": "US"
   },
   {
     "id": "49",
@@ -381,7 +428,8 @@
     "port": 31421,
     "user": "gpftp1085013338547612",
     "password": "KvGTfvUz",
-    "track": "mount_panorama"
+    "track": "mount_panorama",
+    "region": "US"
   },
   {
     "id": "53",
@@ -389,7 +437,8 @@
     "port": 28721,
     "user": "gpftp1085013361522712",
     "password": "fyj2u1Ci",
-    "track": "\u2014"
+    "track": "—",
+    "region": "US"
   },
   {
     "id": "80",
@@ -397,7 +446,8 @@
     "port": 36121,
     "user": "gpftp858826338449012",
     "password": "6NyWk9Ne",
-    "track": "Ps5 only"
+    "track": "Ps5 only",
+    "region": "US"
   },
   {
     "id": "81",
@@ -405,7 +455,8 @@
     "port": 37721,
     "user": "gpftp858826338587312",
     "password": "yO2Ntwqx",
-    "track": "Ps5 only"
+    "track": "Ps5 only",
+    "region": "US"
   },
   {
     "id": "81",
@@ -413,7 +464,8 @@
     "port": 36321,
     "user": "gpftp858826338458212",
     "password": "jcgInCIT",
-    "track": "Ps5 only"
+    "track": "Ps5 only",
+    "region": "US"
   },
   {
     "id": "82",
@@ -421,7 +473,8 @@
     "port": 37621,
     "user": "gpftp858826338587212",
     "password": "qauhLr3t",
-    "track": "Ps5 only"
+    "track": "Ps5 only",
+    "region": "US"
   },
   {
     "id": "90",
@@ -429,7 +482,8 @@
     "port": 29821,
     "user": "gpftp1085013339027912",
     "password": "mrp0h2V3",
-    "track": "\u2014"
+    "track": "—",
+    "region": "US"
   },
   {
     "id": "92",
@@ -437,7 +491,8 @@
     "port": 37921,
     "user": "gpftp1085013339809512",
     "password": "bt7AaVoq",
-    "track": "\u2014"
+    "track": "—",
+    "region": "US"
   },
   {
     "id": "93",
@@ -445,7 +500,8 @@
     "port": 36621,
     "user": "gpftp1085013338548912",
     "password": "qLC5BxFn",
-    "track": "\u2014"
+    "track": "—",
+    "region": "US"
   },
   {
     "id": "37",
@@ -453,7 +509,8 @@
     "port": 31221,
     "user": "gpftp1085013338137571",
     "password": "I1OEmiC2",
-    "track": "monza"
+    "track": "monza",
+    "region": "US"
   },
   {
     "id": "99A",
@@ -461,6 +518,7 @@
     "port": 36521,
     "user": "gpftp31028601802903133",
     "password": "7svCiKLC",
-    "track": "time trial"
+    "track": "time trial",
+    "region": "EU"
   }
 ]
