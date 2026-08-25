@@ -11,6 +11,7 @@ export class LogAnalyzer extends events.EventEmitter {
     this.connectedDrivers = 0;
     this.connectedCarIds = new Set();
     this.lastFileSize = 0;
+    this.isInitialRun = true;
   }
 
   async analyze(filePath) {
@@ -18,9 +19,10 @@ export class LogAnalyzer extends events.EventEmitter {
 
     const stats = fs.statSync(filePath);
     
-    // Detect log rotation / server reset
-    if (stats.size < this.lastFileSize) {
+    // Detect log rotation / server reset (ignore on initial startup)
+    if (!this.isInitialRun && stats.size < this.lastFileSize) {
       this.lastProcessedLine = 0;
+      this.connectedCarIds.clear();
       this.connectedDrivers = 0;
       this.emit('server_reset', {
         serverId: this.serverId,
@@ -45,6 +47,9 @@ export class LogAnalyzer extends events.EventEmitter {
       this.processLine(line);
       this.lastProcessedLine = currentLine;
     }
+    
+    // Once the entire historical file is parsed, subsequent passes will be live
+    this.isInitialRun = false;
   }
 
   processLine(line) {
@@ -53,7 +58,9 @@ export class LogAnalyzer extends events.EventEmitter {
       const match = line.match(/New session:\s+(\w+)/);
       if (match) {
         this.currentSession = match[1];
-        this.emit('session_change', this.currentSession);
+        if (!this.isInitialRun) {
+          this.emit('session_change', this.currentSession);
+        }
       }
     }
     
@@ -61,10 +68,12 @@ export class LogAnalyzer extends events.EventEmitter {
     if (line.includes('Server starting') || line.includes('Server reset')) {
       this.connectedCarIds.clear();
       this.connectedDrivers = 0;
-      this.emit('server_reset', {
-        serverId: this.serverId,
-        timestamp: new Date().toISOString()
-      });
+      if (!this.isInitialRun) {
+        this.emit('server_reset', {
+          serverId: this.serverId,
+          timestamp: new Date().toISOString()
+        });
+      }
     }
 
     // Driver connection tracking via unique Car IDs
@@ -82,16 +91,18 @@ export class LogAnalyzer extends events.EventEmitter {
         this.connectedCarIds.delete(carId);
         this.connectedDrivers = this.connectedCarIds.size;
         
-        const timeMatch = line.match(/^\[(.*?)\]/) || [null, new Date().toISOString()];
-        const timestamp = timeMatch[1];
-        
-        this.emit('driver_disconnect', {
-          serverId: this.serverId,
-          timestamp: timestamp || new Date().toISOString(),
-          session: this.currentSession,
-          activeDrivers: this.connectedDrivers,
-          rawLine: line
-        });
+        if (!this.isInitialRun) {
+          const timeMatch = line.match(/^\[(.*?)\]/) || [null, new Date().toISOString()];
+          const timestamp = timeMatch[1];
+          
+          this.emit('driver_disconnect', {
+            serverId: this.serverId,
+            timestamp: timestamp || new Date().toISOString(),
+            session: this.currentSession,
+            activeDrivers: this.connectedDrivers,
+            rawLine: line
+          });
+        }
       }
     }
   }
@@ -101,5 +112,6 @@ export class LogAnalyzer extends events.EventEmitter {
     this.connectedCarIds.clear();
     this.connectedDrivers = 0;
     this.lastFileSize = 0;
+    this.isInitialRun = true;
   }
 }
