@@ -42,6 +42,22 @@ export class LogAnalyzer extends events.EventEmitter {
     for await (const line of rl) {
       currentLine++;
       
+      // Always check timestamp of every line to detect silent log rotations
+      const tsMatch = line.match(/^(\d+):/);
+      if (tsMatch) {
+        const ts = parseInt(tsMatch[1], 10);
+        if (ts < this.lastLogTimestamp && !this.isInitialRun) {
+          this.connectedCarIds.clear();
+          this.connectedDrivers = 0;
+          this.lastProcessedLine = 0; // Stop skipping lines!
+          this.emit('server_reset', {
+            serverId: this.serverId,
+            timestamp: new Date().toISOString()
+          });
+        }
+        this.lastLogTimestamp = ts;
+      }
+      
       // Skip lines we've already processed in previous passes
       if (currentLine <= this.lastProcessedLine) continue;
 
@@ -54,22 +70,6 @@ export class LogAnalyzer extends events.EventEmitter {
   }
 
   processLine(line) {
-    const tsMatch = line.match(/^(\d+):/);
-    if (tsMatch) {
-      const ts = parseInt(tsMatch[1], 10);
-      
-      // If timestamp drops, the log was overwritten/rotated but we missed the file size drop
-      if (ts < this.lastLogTimestamp && !this.isInitialRun) {
-        this.connectedCarIds.clear();
-        this.connectedDrivers = 0;
-        this.emit('server_reset', {
-          serverId: this.serverId,
-          timestamp: new Date().toISOString()
-        });
-      }
-      this.lastLogTimestamp = ts;
-    }
-
     // Session tracking via leaderboard updates
     const leaderboardMatch = line.match(/Updated leaderboard for \d+ clients \((.+?)-.*? (\d+ min)\)/);
     if (leaderboardMatch) {
