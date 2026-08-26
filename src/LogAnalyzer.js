@@ -11,6 +11,7 @@ export class LogAnalyzer extends events.EventEmitter {
     this.connectedDrivers = 0;
     this.connectedCarIds = new Set();
     this.lastFileSize = 0;
+    this.lastLogTimestamp = 0;
     this.isInitialRun = true;
   }
 
@@ -53,6 +54,22 @@ export class LogAnalyzer extends events.EventEmitter {
   }
 
   processLine(line) {
+    const tsMatch = line.match(/^(\d+):/);
+    if (tsMatch) {
+      const ts = parseInt(tsMatch[1], 10);
+      
+      // If timestamp drops, the log was overwritten/rotated but we missed the file size drop
+      if (ts < this.lastLogTimestamp && !this.isInitialRun) {
+        this.connectedCarIds.clear();
+        this.connectedDrivers = 0;
+        this.emit('server_reset', {
+          serverId: this.serverId,
+          timestamp: new Date().toISOString()
+        });
+      }
+      this.lastLogTimestamp = ts;
+    }
+
     // Session tracking via leaderboard updates
     const leaderboardMatch = line.match(/Updated leaderboard for \d+ clients \((.+?)-.*? (\d+ min)\)/);
     if (leaderboardMatch) {
