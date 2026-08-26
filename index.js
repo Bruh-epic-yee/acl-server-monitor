@@ -364,8 +364,8 @@ client.on('messageCreate', async (message) => {
       const config = serverConfigs.find(s => s.id === serverId);
       const name = config ? config.name : serverId;
       
-      // Get the last 15 crashes
-      const recentHistory = stats.history.slice(-15).reverse();
+      // Get the last 100 crashes
+      const recentHistory = stats.history.slice(-100).reverse();
       
       const historyLines = recentHistory.map(entry => {
         // Format: MM/DD/YYYY, HH:MM:SS
@@ -373,12 +373,17 @@ client.on('messageCreate', async (message) => {
         return `- **${time}**: ${entry.type} during ${entry.session}`;
       });
       
-      const embed = new EmbedBuilder()
-        .setTitle(`🕒 Crash History: ${name}`)
-        .setColor(0x3498DB)
-        .setDescription(historyLines.join('\n'));
-        
-      message.reply({ embeds: [embed] });
+      // Split into chunks of 40 to avoid Discord's 4096 character embed limit
+      const chunkSize = 40;
+      for (let i = 0; i < historyLines.length; i += chunkSize) {
+        const chunk = historyLines.slice(i, i + chunkSize);
+        const embed = new EmbedBuilder()
+          .setTitle(i === 0 ? `🕒 Crash History: ${name}` : `🕒 Crash History: ${name} (Cont.)`)
+          .setColor(0x3498DB)
+          .setDescription(chunk.join('\n'));
+          
+        message.reply({ embeds: [embed] });
+      }
     }
   }
 });
