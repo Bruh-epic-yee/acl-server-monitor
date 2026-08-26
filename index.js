@@ -245,7 +245,7 @@ client.on('messageCreate', async (message) => {
     message.reply({ embeds: [embed] });
   }
 
-  if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes' || message.content.toLowerCase() === '!reliability') {
+  if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes') {
     const leaderboard = Object.entries(serverStats)
       .sort((a, b) => b[1].crashes.total - a[1].crashes.total) // Sort descending by total crashes
       .map(([id, stats]) => {
@@ -258,20 +258,38 @@ client.on('messageCreate', async (message) => {
         if (stats.crashes.practice > 0) crashBreakdown.push(`${stats.crashes.practice} Prac`);
         if (stats.crashes.unknown > 0) crashBreakdown.push(`${stats.crashes.unknown} Unk`);
         
+        const crashStr = crashBreakdown.length > 0 ? ` (${crashBreakdown.join(', ')})` : '';
+        return `- **${name}**: ${stats.crashes.total} Crashes${crashStr}`;
+      });
+      
+    const embed = new EmbedBuilder()
+      .setTitle('📈 Server Disconnect Tally')
+      .setColor(0xFF0000)
+      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No mass disconnects recorded yet! 🎉')
+      
+    message.reply({ embeds: [embed] });
+  }
+
+  if (message.content.toLowerCase() === '!completed' || message.content.toLowerCase() === '!reliability') {
+    const leaderboard = Object.entries(serverStats)
+      .sort((a, b) => b[1].completed.total - a[1].completed.total) // Sort descending by total completed
+      .map(([id, stats]) => {
+        const config = serverConfigs.find(s => s.id === id);
+        const name = config ? config.name : id;
+        
         let compBreakdown = [];
         if (stats.completed.race > 0) compBreakdown.push(`${stats.completed.race} Race`);
         if (stats.completed.qualifying > 0) compBreakdown.push(`${stats.completed.qualifying} Quali`);
         if (stats.completed.practice > 0) compBreakdown.push(`${stats.completed.practice} Prac`);
         
-        const crashStr = crashBreakdown.length > 0 ? ` (${crashBreakdown.join(', ')})` : '';
         const compStr = compBreakdown.length > 0 ? ` (${compBreakdown.join(', ')})` : '';
-        return `- **${name}**: ${stats.crashes.total} Crashes${crashStr} | ${stats.completed.total} Completed${compStr}`;
+        return `- **${name}**: ${stats.completed.total} Completed${compStr}`;
       });
       
     const embed = new EmbedBuilder()
-      .setTitle('📈 Server Reliability Tally')
-      .setColor(0xFFA500)
-      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No mass disconnects recorded yet! 🎉')
+      .setTitle('✅ Server Reliability Tally')
+      .setColor(0x00FF00)
+      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No successful sessions recorded yet! 🏁')
       
     message.reply({ embeds: [embed] });
   }
