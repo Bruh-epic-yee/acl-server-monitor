@@ -27,6 +27,15 @@ let serverStats = {};
 try {
   if (fs.existsSync(STATS_FILE)) {
     serverStats = JSON.parse(fs.readFileSync(STATS_FILE, 'utf-8'));
+    // Migrate old format if needed
+    for (const [key, value] of Object.entries(serverStats)) {
+      if (typeof value === 'number') {
+        serverStats[key] = {
+          total: value,
+          sessions: { qualifying: 0, race: 0, practice: 0, unknown: value }
+        };
+      }
+    }
   }
 } catch (e) {
   console.error("⚠️ Failed to load stats file, starting fresh.");
@@ -70,8 +79,18 @@ manager.on('mass_disconnect_server', async (data) => {
   console.log(`[ALERT] Mass disconnect on ${data.server.name}`);
   
   const id = data.server.id;
-  if (!serverStats[id]) serverStats[id] = 0;
-  serverStats[id]++;
+  const sessionString = (data.session || 'unknown').toLowerCase();
+  let sessionKey = 'unknown';
+  if (sessionString.startsWith('q')) sessionKey = 'qualifying';
+  else if (sessionString.startsWith('r')) sessionKey = 'race';
+  else if (sessionString.startsWith('p')) sessionKey = 'practice';
+
+  if (!serverStats[id]) {
+    serverStats[id] = { total: 0, sessions: { qualifying: 0, race: 0, practice: 0, unknown: 0 } };
+  }
+  
+  serverStats[id].total++;
+  serverStats[id].sessions[sessionKey] = (serverStats[id].sessions[sessionKey] || 0) + 1;
   saveStats();
 
   if (!ALERT_CHANNEL_ID) return;
@@ -185,11 +204,19 @@ client.on('messageCreate', async (message) => {
 
   if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes') {
     const leaderboard = Object.entries(serverStats)
-      .sort((a, b) => b[1] - a[1]) // Sort descending by count
-      .map(([id, count]) => {
+      .sort((a, b) => b[1].total - a[1].total) // Sort descending by total count
+      .map(([id, stats]) => {
         const config = serverConfigs.find(s => s.id === id);
         const name = config ? config.name : id;
-        return `- **${name}**: ${count} disconnects`;
+        
+        let breakdown = [];
+        if (stats.sessions.race > 0) breakdown.push(`${stats.sessions.race} Race`);
+        if (stats.sessions.qualifying > 0) breakdown.push(`${stats.sessions.qualifying} Quali`);
+        if (stats.sessions.practice > 0) breakdown.push(`${stats.sessions.practice} Prac`);
+        if (stats.sessions.unknown > 0) breakdown.push(`${stats.sessions.unknown} Unk`);
+        
+        const breakdownStr = breakdown.length > 0 ? ` (${breakdown.join(', ')})` : '';
+        return `- **${name}**: ${stats.total} crashes${breakdownStr}`;
       });
       
     const embed = new EmbedBuilder()
@@ -202,14 +229,24 @@ client.on('messageCreate', async (message) => {
 
   if (message.content.toLowerCase().startsWith('!addcrash')) {
     const args = message.content.toLowerCase().split(' ');
-    if (args.length === 3) {
+    // Format: !addcrash acl82 2 [session]
+    if (args.length >= 3) {
       const serverId = args[1]; // e.g. "acl82"
       const count = parseInt(args[2], 10);
+      const sessionArg = args[3] || 'unknown';
+      let sessionKey = 'unknown';
+      if (sessionArg.startsWith('q')) sessionKey = 'qualifying';
+      else if (sessionArg.startsWith('r')) sessionKey = 'race';
+      else if (sessionArg.startsWith('p')) sessionKey = 'practice';
+
       if (!isNaN(count)) {
-        if (!serverStats[serverId]) serverStats[serverId] = 0;
-        serverStats[serverId] += count;
+        if (!serverStats[serverId]) {
+           serverStats[serverId] = { total: 0, sessions: { qualifying: 0, race: 0, practice: 0, unknown: 0 } };
+        }
+        serverStats[serverId].total += count;
+        serverStats[serverId].sessions[sessionKey] = (serverStats[serverId].sessions[sessionKey] || 0) + count;
         saveStats();
-        message.reply(`✅ Added ${count} crashes to ${serverId}. It now has ${serverStats[serverId]} total crashes.`);
+        message.reply(`✅ Added ${count} crashes to ${serverId} under ${sessionKey}. It now has ${serverStats[serverId].total} total crashes.`);
       }
     }
   }
