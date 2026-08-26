@@ -283,32 +283,18 @@ client.on('messageCreate', async (message) => {
 
   if (message.content.toLowerCase() === '!completed' || message.content.toLowerCase() === '!reliability') {
     const leaderboard = Object.entries(serverStats)
-      .sort((a, b) => b[1].completed.total - a[1].completed.total) // Sort descending by total completed
+      .sort((a, b) => b[1].completed.race - a[1].completed.race) // Sort descending by completed races
       .map(([id, stats]) => {
         const config = serverConfigs.find(s => s.id === id);
         const name = config ? config.name : id;
         
-        let breakdowns = [];
-        if (stats.completed.race > 0 || stats.crashes.race > 0) {
-            breakdowns.push(`Race: ${stats.crashes.race} Crashed / ${stats.completed.race} Completed`);
-        }
-        if (stats.completed.qualifying > 0 || stats.crashes.qualifying > 0) {
-            breakdowns.push(`Quali: ${stats.crashes.qualifying} Crashed / ${stats.completed.qualifying} Completed`);
-        }
-        if (stats.completed.practice > 0 || stats.crashes.practice > 0) {
-            breakdowns.push(`Prac: ${stats.crashes.practice} Crashed / ${stats.completed.practice} Completed`);
-        }
-        if (stats.crashes.unknown > 0) {
-            breakdowns.push(`Unknown: ${stats.crashes.unknown} Crashed`);
-        }
-        
-        return `- **${name}**: ${breakdowns.join(' | ')}`;
+        return `- **${name}**: ${stats.crashes.total} Crashes / ${stats.completed.race} Completed Races`;
       });
       
     const embed = new EmbedBuilder()
       .setTitle('✅ Server Reliability Tally')
       .setColor(0x00FF00)
-      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No successful sessions recorded yet! 🏁')
+      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No successful races recorded yet! 🏁')
       
     message.reply({ embeds: [embed] });
   }
