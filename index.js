@@ -277,13 +277,21 @@ client.on('messageCreate', async (message) => {
         const config = serverConfigs.find(s => s.id === id);
         const name = config ? config.name : id;
         
-        let compBreakdown = [];
-        if (stats.completed.race > 0) compBreakdown.push(`${stats.completed.race} Race`);
-        if (stats.completed.qualifying > 0) compBreakdown.push(`${stats.completed.qualifying} Quali`);
-        if (stats.completed.practice > 0) compBreakdown.push(`${stats.completed.practice} Prac`);
+        let breakdowns = [];
+        if (stats.completed.race > 0 || stats.crashes.race > 0) {
+            breakdowns.push(`Race: ${stats.crashes.race} Crashed / ${stats.completed.race} Completed`);
+        }
+        if (stats.completed.qualifying > 0 || stats.crashes.qualifying > 0) {
+            breakdowns.push(`Quali: ${stats.crashes.qualifying} Crashed / ${stats.completed.qualifying} Completed`);
+        }
+        if (stats.completed.practice > 0 || stats.crashes.practice > 0) {
+            breakdowns.push(`Prac: ${stats.crashes.practice} Crashed / ${stats.completed.practice} Completed`);
+        }
+        if (stats.crashes.unknown > 0) {
+            breakdowns.push(`Unknown: ${stats.crashes.unknown} Crashed`);
+        }
         
-        const compStr = compBreakdown.length > 0 ? ` (${compBreakdown.join(', ')})` : '';
-        return `- **${name}**: ${stats.completed.total} Completed${compStr}`;
+        return `- **${name}**: ${breakdowns.join(' | ')}`;
       });
       
     const embed = new EmbedBuilder()
