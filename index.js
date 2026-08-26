@@ -32,13 +32,17 @@ try {
       if (typeof value === 'number') {
         serverStats[key] = {
           crashes: { total: value, qualifying: 0, race: 0, practice: 0, unknown: value },
-          completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+          completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
+          history: []
         };
       } else if (value.sessions) { // Migrate from v1 object format
         serverStats[key] = {
           crashes: { total: value.total || 0, qualifying: value.sessions.qualifying || 0, race: value.sessions.race || 0, practice: value.sessions.practice || 0, unknown: value.sessions.unknown || 0 },
-          completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+          completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
+          history: []
         };
+      } else if (!value.history) {
+        value.history = [];
       }
     }
   }
@@ -94,12 +98,18 @@ manager.on('mass_disconnect_server', async (data) => {
   if (!serverStats[id]) {
     serverStats[id] = { 
       crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
-      completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+      completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
+      history: []
     };
   }
   
   serverStats[id].crashes.total++;
   serverStats[id].crashes[sessionKey] = (serverStats[id].crashes[sessionKey] || 0) + 1;
+  serverStats[id].history.push({
+    type: 'crash',
+    session: sessionKey,
+    timestamp: new Date().toISOString()
+  });
   data.server.hasCrashedThisSession = true;
   saveStats();
 
@@ -147,7 +157,8 @@ manager.on('session_completed', (data) => {
     if (!serverStats[id]) {
       serverStats[id] = { 
         crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
-        completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+        completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
+        history: []
       };
     }
     
@@ -318,14 +329,56 @@ client.on('messageCreate', async (message) => {
         if (!serverStats[serverId]) {
            serverStats[serverId] = { 
              crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
-             completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+             completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
+             history: []
            };
         }
         serverStats[serverId].crashes.total += count;
         serverStats[serverId].crashes[sessionKey] = (serverStats[serverId].crashes[sessionKey] || 0) + count;
+        
+        for (let i = 0; i < count; i++) {
+          serverStats[serverId].history.push({
+            type: 'crash (manual addition)',
+            session: sessionKey,
+            timestamp: new Date().toISOString()
+          });
+        }
+        
         saveStats();
         message.reply(`✅ Added ${count} crashes to ${serverId} under ${sessionKey}. It now has ${serverStats[serverId].crashes.total} total crashes.`);
       }
+    }
+  }
+
+  if (message.content.toLowerCase().startsWith('!history')) {
+    const args = message.content.toLowerCase().split(' ');
+    if (args.length >= 2) {
+      const serverId = args[1];
+      const stats = serverStats[serverId];
+      
+      if (!stats || !stats.history || stats.history.length === 0) {
+        message.reply(`No crash history recorded for ${serverId} yet.`);
+        return;
+      }
+      
+      const config = serverConfigs.find(s => s.id === serverId);
+      const name = config ? config.name : serverId;
+      
+      // Get the last 15 crashes
+      const recentHistory = stats.history.slice(-15).reverse();
+      
+      const historyLines = recentHistory.map(entry => {
+        // Format: MM/DD/YYYY, HH:MM:SS
+        const time = new Date(entry.timestamp).toLocaleString('en-GB', { timeZone: 'Europe/London' });
+        return `- **${time}**: ${entry.type} during ${entry.session}`;
+      });
+      
+      const embed = new EmbedBuilder()
+        .setTitle(`🕒 Crash History: ${name}`)
+        .setColor(0x3498DB)
+        .setDescription(historyLines.join('\n'));
+        
+      message.reply({ embeds: [embed] });
     }
   }
 });
