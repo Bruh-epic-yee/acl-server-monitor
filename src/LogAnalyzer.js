@@ -80,6 +80,21 @@ export class LogAnalyzer extends events.EventEmitter {
       }
     }
 
+    // Session completion
+    const completionMatch = line.match(/Session completed: (\w+)\//);
+    if (completionMatch) {
+      if (!this.isInitialRun) {
+        this.emit('session_completed', completionMatch[1]); // e.g., "Race", "Qualifying"
+      }
+    }
+
+    // Session changed (new session started)
+    if (line.includes('Session changed:')) {
+      if (!this.isInitialRun) {
+        this.emit('session_started');
+      }
+    }
+
     // Dynamic track detection
     const trackMatch = line.match(/Track (\w+) was set and updated/);
     if (trackMatch) {

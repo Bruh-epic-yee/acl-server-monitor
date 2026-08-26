@@ -50,6 +50,19 @@ export class ServerManager extends events.EventEmitter {
         }
       });
 
+      analyzer.on('session_completed', (sessionType) => {
+        this.emit('session_completed', {
+          server: config,
+          sessionType: sessionType
+        });
+      });
+
+      analyzer.on('session_started', () => {
+        this.emit('session_started', {
+          server: config
+        });
+      });
+
       this.monitors.set(config.id, { ftp, analyzer });
 
       // Stagger start

@@ -31,8 +31,13 @@ try {
     for (const [key, value] of Object.entries(serverStats)) {
       if (typeof value === 'number') {
         serverStats[key] = {
-          total: value,
-          sessions: { qualifying: 0, race: 0, practice: 0, unknown: value }
+          crashes: { total: value, qualifying: 0, race: 0, practice: 0, unknown: value },
+          completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+        };
+      } else if (value.sessions) { // Migrate from v1 object format
+        serverStats[key] = {
+          crashes: { total: value.total || 0, qualifying: value.sessions.qualifying || 0, race: value.sessions.race || 0, practice: value.sessions.practice || 0, unknown: value.sessions.unknown || 0 },
+          completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
         };
       }
     }
@@ -61,7 +66,8 @@ const serverConfigs = rawServers.map(s => ({
     port: s.port,
     user: s.user,
     password: s.password
-  }
+  },
+  hasCrashedThisSession: false
 }));
 
 const manager = new ServerManager(serverConfigs);
@@ -86,11 +92,15 @@ manager.on('mass_disconnect_server', async (data) => {
   else if (sessionString.startsWith('p')) sessionKey = 'practice';
 
   if (!serverStats[id]) {
-    serverStats[id] = { total: 0, sessions: { qualifying: 0, race: 0, practice: 0, unknown: 0 } };
+    serverStats[id] = { 
+      crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
+      completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+    };
   }
   
-  serverStats[id].total++;
-  serverStats[id].sessions[sessionKey] = (serverStats[id].sessions[sessionKey] || 0) + 1;
+  serverStats[id].crashes.total++;
+  serverStats[id].crashes[sessionKey] = (serverStats[id].crashes[sessionKey] || 0) + 1;
+  data.server.hasCrashedThisSession = true;
   saveStats();
 
   if (!ALERT_CHANNEL_ID) return;
@@ -115,6 +125,39 @@ manager.on('mass_disconnect_server', async (data) => {
   } catch (err) {
     console.error('❌ Failed to send Discord alert. Check bot permissions in that channel:', err.message);
   }
+});
+
+// Session started or Server Reset: Reset the crash flag
+manager.on('session_started', (data) => {
+  data.server.hasCrashedThisSession = false;
+});
+
+// Session completed naturally
+manager.on('session_completed', (data) => {
+  const id = data.server.id;
+  const sessionString = (data.sessionType || 'unknown').toLowerCase();
+  
+  let sessionKey = 'unknown';
+  if (sessionString === 'qualifying') sessionKey = 'qualifying';
+  else if (sessionString === 'race') sessionKey = 'race';
+  else if (sessionString === 'practice') sessionKey = 'practice';
+
+  // Only tally if it didn't crash this session
+  if (!data.server.hasCrashedThisSession && sessionKey !== 'unknown') {
+    if (!serverStats[id]) {
+      serverStats[id] = { 
+        crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
+        completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+      };
+    }
+    
+    serverStats[id].completed.total++;
+    serverStats[id].completed[sessionKey]++;
+    saveStats();
+  }
+  
+  // Reset flag for the next session
+  data.server.hasCrashedThisSession = false;
 });
 
 // Send an alert when a Machine-level mass disconnect occurs (Multiple servers on same IP)
@@ -202,25 +245,31 @@ client.on('messageCreate', async (message) => {
     message.reply({ embeds: [embed] });
   }
 
-  if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes') {
+  if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes' || message.content.toLowerCase() === '!reliability') {
     const leaderboard = Object.entries(serverStats)
-      .sort((a, b) => b[1].total - a[1].total) // Sort descending by total count
+      .sort((a, b) => b[1].crashes.total - a[1].crashes.total) // Sort descending by total crashes
       .map(([id, stats]) => {
         const config = serverConfigs.find(s => s.id === id);
         const name = config ? config.name : id;
         
-        let breakdown = [];
-        if (stats.sessions.race > 0) breakdown.push(`${stats.sessions.race} Race`);
-        if (stats.sessions.qualifying > 0) breakdown.push(`${stats.sessions.qualifying} Quali`);
-        if (stats.sessions.practice > 0) breakdown.push(`${stats.sessions.practice} Prac`);
-        if (stats.sessions.unknown > 0) breakdown.push(`${stats.sessions.unknown} Unk`);
+        let crashBreakdown = [];
+        if (stats.crashes.race > 0) crashBreakdown.push(`${stats.crashes.race} Race`);
+        if (stats.crashes.qualifying > 0) crashBreakdown.push(`${stats.crashes.qualifying} Quali`);
+        if (stats.crashes.practice > 0) crashBreakdown.push(`${stats.crashes.practice} Prac`);
+        if (stats.crashes.unknown > 0) crashBreakdown.push(`${stats.crashes.unknown} Unk`);
         
-        const breakdownStr = breakdown.length > 0 ? ` (${breakdown.join(', ')})` : '';
-        return `- **${name}**: ${stats.total} crashes${breakdownStr}`;
+        let compBreakdown = [];
+        if (stats.completed.race > 0) compBreakdown.push(`${stats.completed.race} Race`);
+        if (stats.completed.qualifying > 0) compBreakdown.push(`${stats.completed.qualifying} Quali`);
+        if (stats.completed.practice > 0) compBreakdown.push(`${stats.completed.practice} Prac`);
+        
+        const crashStr = crashBreakdown.length > 0 ? ` (${crashBreakdown.join(', ')})` : '';
+        const compStr = compBreakdown.length > 0 ? ` (${compBreakdown.join(', ')})` : '';
+        return `- **${name}**: ${stats.crashes.total} Crashes${crashStr} | ${stats.completed.total} Completed${compStr}`;
       });
       
     const embed = new EmbedBuilder()
-      .setTitle('📈 Server Disconnect Tally')
+      .setTitle('📈 Server Reliability Tally')
       .setColor(0xFFA500)
       .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No mass disconnects recorded yet! 🎉')
       
@@ -241,12 +290,15 @@ client.on('messageCreate', async (message) => {
 
       if (!isNaN(count)) {
         if (!serverStats[serverId]) {
-           serverStats[serverId] = { total: 0, sessions: { qualifying: 0, race: 0, practice: 0, unknown: 0 } };
+           serverStats[serverId] = { 
+             crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
+             completed: { total: 0, qualifying: 0, race: 0, practice: 0 }
+           };
         }
-        serverStats[serverId].total += count;
-        serverStats[serverId].sessions[sessionKey] = (serverStats[serverId].sessions[sessionKey] || 0) + count;
+        serverStats[serverId].crashes.total += count;
+        serverStats[serverId].crashes[sessionKey] = (serverStats[serverId].crashes[sessionKey] || 0) + count;
         saveStats();
-        message.reply(`✅ Added ${count} crashes to ${serverId} under ${sessionKey}. It now has ${serverStats[serverId].total} total crashes.`);
+        message.reply(`✅ Added ${count} crashes to ${serverId} under ${sessionKey}. It now has ${serverStats[serverId].crashes.total} total crashes.`);
       }
     }
   }
