@@ -283,7 +283,7 @@ client.on('messageCreate', async (message) => {
 
   if (message.content.toLowerCase() === '!completed' || message.content.toLowerCase() === '!reliability') {
     const leaderboard = Object.entries(serverStats)
-      .sort((a, b) => b[1].completed.race - a[1].completed.race) // Sort descending by completed races
+      .sort((a, b) => b[1].crashes.total - a[1].crashes.total) // Sort descending by total crashes
       .map(([id, stats]) => {
         const config = serverConfigs.find(s => s.id === id);
         const name = config ? config.name : id;
