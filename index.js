@@ -262,6 +262,8 @@ client.on('messageCreate', async (message) => {
       .map(([id, stats]) => {
         const config = serverConfigs.find(s => s.id === id);
         const name = config ? config.name : id;
+        const region = config ? config.region : '';
+        const emoji = region === 'EU' ? '🔴 ' : (region === 'US' ? '🔵 ' : '');
         
         let crashBreakdown = [];
         if (stats.crashes.race > 0) crashBreakdown.push(`${stats.crashes.race} Race`);
@@ -270,7 +272,7 @@ client.on('messageCreate', async (message) => {
         if (stats.crashes.unknown > 0) crashBreakdown.push(`${stats.crashes.unknown} Unk`);
         
         const crashStr = crashBreakdown.length > 0 ? ` (${crashBreakdown.join(', ')})` : '';
-        return `- **${name}**: ${stats.crashes.total} Crashes${crashStr}`;
+        return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes${crashStr}`;
       });
       
     const embed = new EmbedBuilder()
@@ -287,8 +289,10 @@ client.on('messageCreate', async (message) => {
       .map(([id, stats]) => {
         const config = serverConfigs.find(s => s.id === id);
         const name = config ? config.name : id;
+        const region = config ? config.region : '';
+        const emoji = region === 'EU' ? '🔴 ' : (region === 'US' ? '🔵 ' : '');
         
-        return `- **${name}**: ${stats.crashes.total} Crashes / ${stats.completed.race} Completed Races`;
+        return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes / ${stats.completed.race} Completed Races`;
       });
       
     const embed = new EmbedBuilder()
