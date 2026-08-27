@@ -336,6 +336,41 @@ client.on('messageCreate', async (message) => {
     }
   }
 
+  if (message.content.toLowerCase().startsWith('!restoredata')) {
+    // !restoredata acl41=2/29 acl82=2/21
+    const args = message.content.toLowerCase().split(' ').slice(1);
+    let count = 0;
+    
+    for (const arg of args) {
+      const [serverId, stats] = arg.split('=');
+      if (!serverId || !stats) continue;
+      
+      const [crashes, completed] = stats.split('/');
+      const parsedCrashes = parseInt(crashes, 10);
+      const parsedCompleted = parseInt(completed, 10);
+      
+      if (!isNaN(parsedCrashes) && !isNaN(parsedCompleted)) {
+        if (!serverStats[serverId]) {
+           serverStats[serverId] = { 
+             crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
+             completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
+             history: []
+           };
+        }
+        serverStats[serverId].crashes.total = parsedCrashes;
+        serverStats[serverId].completed.race = parsedCompleted;
+        count++;
+      }
+    }
+    
+    if (count > 0) {
+      saveStats();
+      message.reply(`✅ Successfully restored data for ${count} servers! Run !reliability to verify.`);
+    } else {
+      message.reply(`⚠️ No valid data parsed. Use format: !restoredata acl41=2/29`);
+    }
+  }
+
   if (message.content.toLowerCase().startsWith('!history')) {
     const args = message.content.toLowerCase().split(' ');
     if (args.length >= 2) {
