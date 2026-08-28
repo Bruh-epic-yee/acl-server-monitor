@@ -208,10 +208,10 @@
   },
   {
     "id": "24",
-    "host": "176.57.174.137",
-    "port": 31921,
-    "user": "gpftp31028601802899633",
-    "password": "JaSqmnek",
+    "host": "176.57.168.78",
+    "port": 33421,
+    "user": "gpftp31028601862766633",
+    "password": "6HU1HTXr",
     "track": "red_bull_ring",
     "region": "EU"
   },
@@ -434,9 +434,9 @@
   {
     "id": "53",
     "host": "83.223.203.126",
-    "port": 28721,
-    "user": "gpftp1085013361522712",
-    "password": "fyj2u1Ci",
+    "port": 28121,
+    "user": "gpftp1085013375366912",
+    "password": "5q0pEHvC",
     "track": "—",
     "region": "US"
   },
