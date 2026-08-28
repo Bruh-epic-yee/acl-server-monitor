@@ -136,7 +136,34 @@ export class ServerManager extends events.EventEmitter {
     }
     */
 
-    // 2. Machine-level mass disconnect 
+    // 2. Region-level mass disconnect 
+    const regionDrops = this.disconnectEvents.filter(e => 
+      e.serverConfig.region === triggeringServer.region &&
+      now - e.localTime <= this.TIME_WINDOW_MS
+    );
+
+    const uniqueMachineIpsAffected = new Set(regionDrops.map(e => e.serverConfig.machineIp));
+    let regionalAlertTriggered = false;
+
+    // If multiple machines in the same region saw drops
+    if (uniqueMachineIpsAffected.size > 1 && regionDrops.length >= 15) {
+      // Avoid spamming region level
+      if (!triggeringServer.lastRegionAlert || (now - triggeringServer.lastRegionAlert > 120000)) {
+        triggeringServer.lastRegionAlert = now;
+        regionalAlertTriggered = true;
+        this.emit('mass_disconnect_region', {
+          region: triggeringServer.region,
+          machinesAffected: uniqueMachineIpsAffected.size,
+          serversAffected: new Set(regionDrops.map(e => e.serverConfig.id)).size,
+          dropCount: regionDrops.length,
+          session: regionDrops[0].session
+        });
+      }
+    }
+
+    if (regionalAlertTriggered) return; // Prevent spamming machine alerts if region is down
+
+    // 3. Machine-level mass disconnect 
     const machineDrops = this.disconnectEvents.filter(e => 
       e.serverConfig.machineIp === triggeringServer.machineIp &&
       now - e.localTime <= this.TIME_WINDOW_MS

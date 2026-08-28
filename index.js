@@ -171,6 +171,33 @@ manager.on('session_completed', (data) => {
   data.server.hasCrashedThisSession = false;
 });
 
+// Send an alert when a Region-level mass disconnect occurs (Multiple IPs in same region)
+manager.on('mass_disconnect_region', async (data) => {
+  console.log(`[ALERT] REGION LEVEL DISCONNECT in ${data.region}`);
+  if (!ALERT_CHANNEL_ID) return;
+
+  const channel = await client.channels.fetch(ALERT_CHANNEL_ID).catch(() => null);
+  if (!channel) return;
+
+  const embed = new EmbedBuilder()
+    .setTitle('🚨 CRITICAL: Data Center Routing Outage')
+    .setColor(0x8B0000)
+    .setDescription(`Multiple physical machines in the **${data.region}** region just experienced simultaneous driver drops. This strongly indicates a regional G-Portal data center outage!`)
+    .addFields(
+      { name: 'Region', value: data.region, inline: true },
+      { name: 'Machines Affected', value: `${data.machinesAffected}`, inline: true },
+      { name: 'Servers Affected', value: `${data.serversAffected}`, inline: true },
+      { name: 'Total Drivers Dropped', value: `${data.dropCount} within 30s`, inline: true }
+    )
+    .setTimestamp();
+
+  try {
+    await channel.send({ content: '@here', embeds: [embed] });
+  } catch (err) {
+    console.error('❌ Failed to send Discord alert:', err.message);
+  }
+});
+
 // Send an alert when a Machine-level mass disconnect occurs (Multiple servers on same IP)
 manager.on('mass_disconnect_machine', async (data) => {
   console.log(`[ALERT] MACHINE LEVEL DISCONNECT on ${data.machineIp}`);
@@ -180,9 +207,9 @@ manager.on('mass_disconnect_machine', async (data) => {
   if (!channel) return;
 
   const embed = new EmbedBuilder()
-    .setTitle('🛑 CRITICAL: Machine Level Disconnect')
+    .setTitle('🛑 CRITICAL: Hardware Node Failure')
     .setColor(0x8B0000)
-    .setDescription(`Multiple servers hosted on the same physical machine just dropped simultaneously.`)
+    .setDescription(`Multiple servers hosted on the exact same physical machine just dropped simultaneously. This indicates a hardware node failure at G-Portal.`)
     .addFields(
       { name: 'Machine IP', value: data.machineIp, inline: true },
       { name: 'Region', value: data.region, inline: true },
@@ -191,11 +218,10 @@ manager.on('mass_disconnect_machine', async (data) => {
     )
     .setTimestamp();
 
-  // You can ping a specific role by adding `<@&ROLE_ID>` to the message content
   try {
     await channel.send({ content: '@here', embeds: [embed] });
   } catch (err) {
-    console.error('❌ Failed to send Discord alert. Check bot permissions in that channel:', err.message);
+    console.error('❌ Failed to send Discord alert:', err.message);
   }
 });
 
