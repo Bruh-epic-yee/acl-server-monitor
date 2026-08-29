@@ -182,7 +182,7 @@ manager.on('mass_disconnect_region', async (data) => {
   const embed = new EmbedBuilder()
     .setTitle('🚨 CRITICAL: Data Center Routing Outage')
     .setColor(0x8B0000)
-    .setDescription(`Multiple physical machines in the **${data.region}** region just experienced simultaneous driver drops. This strongly indicates a regional G-Portal data center outage!`)
+    .setDescription(`Multiple physical machines in the **${data.region}** region just experienced simultaneous driver drops. This strongly indicates a regional data center outage!`)
     .addFields(
       { name: 'Region', value: data.region, inline: true },
       { name: 'Machines Affected', value: `${data.machinesAffected}`, inline: true },
@@ -209,7 +209,7 @@ manager.on('mass_disconnect_machine', async (data) => {
   const embed = new EmbedBuilder()
     .setTitle('🛑 CRITICAL: Hardware Node Failure')
     .setColor(0x8B0000)
-    .setDescription(`Multiple servers hosted on the exact same physical machine just dropped simultaneously. This indicates a hardware node failure at G-Portal.`)
+    .setDescription(`Multiple servers hosted on the exact same physical machine just dropped simultaneously. This indicates a hardware node failure.`)
     .addFields(
       { name: 'Machine IP', value: data.machineIp, inline: true },
       { name: 'Region', value: data.region, inline: true },
