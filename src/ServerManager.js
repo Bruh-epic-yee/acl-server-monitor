@@ -40,10 +40,12 @@ export class ServerManager extends events.EventEmitter {
         if (!config.lastResetAlert || (now - config.lastResetAlert > 60000)) {
           config.lastResetAlert = now;
           
+          const drivers = event.activeDrivers || 0;
+          
           // Trigger a mass disconnect alert for a server reset
           this.emit('mass_disconnect_server', {
             server: config,
-            dropCount: 'ALL (Server Reset)',
+            dropCount: `ALL ${drivers > 0 ? `(${drivers}) ` : ''}(Server Reset)`,
             session: analyzer.currentSession,
             isReset: true
           });

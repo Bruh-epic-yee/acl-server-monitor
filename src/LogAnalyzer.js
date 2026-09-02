@@ -60,11 +60,13 @@ export class LogAnalyzer extends events.EventEmitter {
       
       // If timestamp drops, the log was overwritten/rotated but we missed the file size drop
       if (ts < this.lastLogTimestamp && !this.isInitialRun) {
+        const driversBeforeReset = this.connectedDrivers;
         this.connectedCarIds.clear();
         this.connectedDrivers = 0;
         this.emit('server_reset', {
           serverId: this.serverId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          activeDrivers: driversBeforeReset
         });
       }
       this.lastLogTimestamp = ts;
@@ -87,12 +89,14 @@ export class LogAnalyzer extends events.EventEmitter {
     
     // Explicit server restart line in ACC
     if (line.includes('Server starting') || line.includes('Server reset')) {
+      const driversBeforeReset = this.connectedDrivers;
       this.connectedCarIds.clear();
       this.connectedDrivers = 0;
       if (!this.isInitialRun) {
         this.emit('server_reset', {
           serverId: this.serverId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          activeDrivers: driversBeforeReset
         });
       }
     }
