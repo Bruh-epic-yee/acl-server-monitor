@@ -45,7 +45,7 @@ export class ServerManager extends events.EventEmitter {
           // Trigger a mass disconnect alert for a server reset
           this.emit('mass_disconnect_server', {
             server: config,
-            dropCount: `ALL ${drivers > 0 ? `(${drivers}) ` : ''}(Server Reset)`,
+            dropCount: `ALL (${drivers}) (Server Reset)`,
             session: analyzer.currentSession,
             isReset: true
           });
