@@ -22,12 +22,14 @@ export class LogAnalyzer extends events.EventEmitter {
     
     // Detect log rotation / server reset (ignore on initial startup)
     if (!this.isInitialRun && stats.size < this.lastFileSize) {
+      const driversBeforeReset = this.connectedDrivers;
       this.lastProcessedLine = 0;
       this.connectedCarIds.clear();
       this.connectedDrivers = 0;
       this.emit('server_reset', {
         serverId: this.serverId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        activeDrivers: driversBeforeReset
       });
     }
     this.lastFileSize = stats.size;
