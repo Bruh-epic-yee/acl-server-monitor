@@ -252,6 +252,37 @@ manager.on('ftp_offline', async (data) => {
   }
 });
 
+// Helper function to send long lists as multiple embedded messages to avoid Discord's 4096 char limit
+async function sendChunkedEmbeds(message, title, color, lines, emptyMessage) {
+  if (lines.length === 0) {
+    const embed = new EmbedBuilder().setTitle(title).setColor(color).setDescription(emptyMessage);
+    await message.reply({ embeds: [embed] });
+    return;
+  }
+
+  let currentChunk = [];
+  let currentLength = 0;
+  let currentTitle = title;
+
+  for (const line of lines) {
+    if (currentLength + line.length + 1 > 4000) {
+      const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n'));
+      await message.reply({ embeds: [embed] });
+      currentChunk = [line];
+      currentLength = line.length;
+      currentTitle = `${title} (Cont.)`;
+    } else {
+      currentChunk.push(line);
+      currentLength += line.length + 1;
+    }
+  }
+
+  if (currentChunk.length > 0) {
+    const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n'));
+    await message.reply({ embeds: [embed] });
+  }
+}
+
 // Simple command to check status
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
@@ -273,13 +304,35 @@ client.on('messageCreate', async (message) => {
       }
     }
 
-      const embed = new EmbedBuilder()
-      .setTitle('📊 Current Server Population')
-      .setColor(0x00FF00)
-      .setDescription(active.length > 0 ? active.join('\n') : 'All servers are currently empty.')
-      .setFooter({ text: `${emptyCount} servers are currently empty.` });
-
-    message.reply({ embeds: [embed] });
+    const title = '📊 Current Server Population';
+    const color = 0x00FF00;
+    
+    if (active.length === 0) {
+      const embed = new EmbedBuilder().setTitle(title).setColor(color).setDescription('All servers are currently empty.').setFooter({ text: `${emptyCount} servers are currently empty.` });
+      await message.reply({ embeds: [embed] });
+    } else {
+      // Chunk it manually to add the footer to the last chunk
+      let currentChunk = [];
+      let currentLength = 0;
+      let currentTitle = title;
+      
+      for (const line of active) {
+        if (currentLength + line.length + 1 > 4000) {
+          const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n'));
+          await message.reply({ embeds: [embed] });
+          currentChunk = [line];
+          currentLength = line.length;
+          currentTitle = `${title} (Cont.)`;
+        } else {
+          currentChunk.push(line);
+          currentLength += line.length + 1;
+        }
+      }
+      if (currentChunk.length > 0) {
+        const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n')).setFooter({ text: `${emptyCount} servers are currently empty.` });
+        await message.reply({ embeds: [embed] });
+      }
+    }
   }
 
   if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes') {
@@ -305,12 +358,7 @@ client.on('messageCreate', async (message) => {
         return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes${dailyStr}${crashStr}`;
       });
       
-    const embed = new EmbedBuilder()
-      .setTitle('📈 Server Disconnect Tally')
-      .setColor(0xFF0000)
-      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No mass disconnects recorded yet! 🎉')
-      
-    message.reply({ embeds: [embed] });
+    await sendChunkedEmbeds(message, '📈 Server Disconnect Tally', 0xFF0000, leaderboard, 'No mass disconnects recorded yet! 🎉');
   }
 
   if (message.content.toLowerCase() === '!completed' || message.content.toLowerCase() === '!reliability') {
@@ -325,12 +373,7 @@ client.on('messageCreate', async (message) => {
         return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes / ${stats.completed.race} Completed Races`;
       });
       
-    const embed = new EmbedBuilder()
-      .setTitle('✅ Server Reliability Tally')
-      .setColor(0x00FF00)
-      .setDescription(leaderboard.length > 0 ? leaderboard.join('\n') : 'No successful races recorded yet! 🏁')
-      
-    message.reply({ embeds: [embed] });
+    await sendChunkedEmbeds(message, '✅ Server Reliability Tally', 0x00FF00, leaderboard, 'No successful races recorded yet! 🏁');
   }
 
   if (message.content.toLowerCase().startsWith('!addcrash')) {
