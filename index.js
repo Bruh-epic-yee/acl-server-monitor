@@ -297,8 +297,12 @@ client.on('messageCreate', async (message) => {
         if (stats.crashes.practice > 0) crashBreakdown.push(`${stats.crashes.practice} Prac`);
         if (stats.crashes.unknown > 0) crashBreakdown.push(`${stats.crashes.unknown} Unk`);
         
+        const now = Date.now();
+        const dailyCrashes = (stats.history || []).filter(e => e.type === 'crash' && (now - new Date(e.timestamp).getTime()) <= 24 * 60 * 60 * 1000).length;
+        const dailyStr = dailyCrashes > 0 ? ` **(${dailyCrashes} Today)**` : ' **(0 Today)**';
+        
         const crashStr = crashBreakdown.length > 0 ? ` (${crashBreakdown.join(', ')})` : '';
-        return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes${crashStr}`;
+        return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes${dailyStr}${crashStr}`;
       });
       
     const embed = new EmbedBuilder()
