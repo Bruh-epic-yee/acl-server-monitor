@@ -51,4 +51,40 @@ export class FTPSync {
       return { success: false, error: error.message };
     }
   }
+
+  async syncSettingsFile() {
+    const client = new ftp.Client();
+    client.ftp.verbose = false;
+    client.ftp.timeout = 5000;
+
+    const localSettingsPath = path.join(this.dataDir, 'settings.json');
+
+    try {
+      await client.access({
+        host: this.config.ftp.host,
+        port: this.config.ftp.port || 21,
+        user: this.config.ftp.user,
+        password: this.config.ftp.password,
+        secure: false
+      });
+
+      await client.downloadTo(localSettingsPath, 'cfg/settings.json');
+      client.close();
+      
+      let rawData = fs.readFileSync(localSettingsPath);
+      let text = rawData.toString('utf16le');
+      if (!text.includes('"serverName"')) {
+        text = rawData.toString('utf8');
+      }
+      if (text.charCodeAt(0) === 0xFEFF) {
+        text = text.slice(1);
+      }
+      
+      const settings = JSON.parse(text);
+      return { success: true, serverName: settings.serverName };
+    } catch (error) {
+      client.close();
+      return { success: false, error: error.message };
+    }
+  }
 }

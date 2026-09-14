@@ -31,7 +31,9 @@ export class ServerManager extends events.EventEmitter {
       });
 
       analyzer.on('track_change', (trackName) => {
-        config.name = `ACL ${config.id.replace('acl', '')} (${trackName})`;
+        if (!config.trueNameFetched) {
+          config.name = `ACL ${config.id.replace('acl', '')} (${trackName})`;
+        }
       });
 
       analyzer.on('server_reset', (event) => {
@@ -82,6 +84,14 @@ export class ServerManager extends events.EventEmitter {
 
     const result = await monitor.ftp.syncLogFile();
     if (result && result.success) {
+      if (!monitor.ftp.config.trueNameFetched) {
+        const settingsResult = await monitor.ftp.syncSettingsFile();
+        if (settingsResult && settingsResult.success && settingsResult.serverName) {
+          monitor.ftp.config.name = settingsResult.serverName;
+          monitor.ftp.config.trueNameFetched = true;
+        }
+      }
+      
       await monitor.analyzer.analyze(result.logPath);
       
       // If it came back online after being offline, we can reset the counter
