@@ -1,10 +1,10 @@
 [
   {
     "id": "01",
-    "host": "176.57.168.78",
-    "port": 35121,
-    "user": "gpftp31028601802889233",
-    "password": "g1FK09Rp",
+    "host": "176.57.168.181",
+    "port": 30221,
+    "user": "gpftp31028601867771233",
+    "password": "185NXAxY",
     "track": "monza",
     "region": "EU"
   },
