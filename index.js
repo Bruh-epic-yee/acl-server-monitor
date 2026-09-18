@@ -122,7 +122,7 @@ manager.on('mass_disconnect_server', async (data) => {
     .setTitle('🚨 Server Disconnect Alert')
     .setColor(0xFF0000)
     .addFields(
-      { name: 'Server', value: data.server.name, inline: true },
+      { name: 'Server', value: data.server.name ? data.server.name.split('|')[0].trim() : 'Unknown', inline: true },
       { name: 'Region', value: data.server.region, inline: true },
       { name: 'Machine IP', value: data.server.machineIp, inline: false },
       { name: 'Drivers Dropped', value: `${data.dropCount} within 30s`, inline: true },
@@ -238,7 +238,7 @@ manager.on('ftp_offline', async (data) => {
     .setColor(0xFFA500) // Orange
     .setDescription(`Failed to connect to the FTP server after 3 attempts.`)
     .addFields(
-      { name: 'Server', value: data.server.name, inline: true },
+      { name: 'Server', value: data.server.name ? data.server.name.split('|')[0].trim() : 'Unknown', inline: true },
       { name: 'Region', value: data.server.region, inline: true },
       { name: 'Machine IP', value: data.server.machineIp, inline: false },
       { name: 'Error', value: data.error, inline: false }
