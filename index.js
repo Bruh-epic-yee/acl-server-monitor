@@ -1,16 +1,11 @@
-import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
 import { ServerManager } from './src/ServerManager.js';
 
 dotenv.config();
-
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
-});
-
-const TOKEN = process.env.DISCORD_TOKEN;
-const ALERT_CHANNEL_ID = process.env.ALERT_CHANNEL_ID || '';
 
 // Load the server configurations
 let rawServers = [];
@@ -76,18 +71,9 @@ const serverConfigs = rawServers.map(s => ({
 
 const manager = new ServerManager(serverConfigs);
 
-client.on('ready', () => {
-  console.log(`✅ Logged in as ${client.user.tag}!`);
-  client.user.setActivity(`${serverConfigs.length} ACL Servers`, { type: 'WATCHING' });
-
-  // Start the background monitoring process
-  manager.start();
-});
-
-// Send an alert when a Single Server mass disconnects
+// Save stats when a crash happens (silently, without Discord alerts)
 manager.on('mass_disconnect_server', async (data) => {
   console.log(`[ALERT] Mass disconnect on ${data.server.name}`);
-  
   const id = data.server.id;
   const sessionString = (data.session || 'unknown').toLowerCase();
   let sessionKey = 'unknown';
@@ -112,47 +98,20 @@ manager.on('mass_disconnect_server', async (data) => {
   });
   data.server.hasCrashedThisSession = true;
   saveStats();
-
-  if (!ALERT_CHANNEL_ID) return;
-
-  const channel = await client.channels.fetch(ALERT_CHANNEL_ID).catch(() => null);
-  if (!channel) return;
-
-  const embed = new EmbedBuilder()
-    .setTitle('🚨 Server Disconnect Alert')
-    .setColor(0xFF0000)
-    .addFields(
-      { name: 'Server', value: data.server.name ? data.server.name.split('|')[0].trim() : 'Unknown', inline: true },
-      { name: 'Region', value: data.server.region, inline: true },
-      { name: 'Machine IP', value: data.server.machineIp, inline: false },
-      { name: 'Drivers Dropped', value: `${data.dropCount} within 30s`, inline: true },
-      { name: 'Session', value: data.session || 'Unknown', inline: true }
-    )
-    .setTimestamp();
-
-  try {
-    await channel.send({ embeds: [embed] });
-  } catch (err) {
-    console.error('❌ Failed to send Discord alert. Check bot permissions in that channel:', err.message);
-  }
 });
 
-// Session started or Server Reset: Reset the crash flag
 manager.on('session_started', (data) => {
   data.server.hasCrashedThisSession = false;
 });
 
-// Session completed naturally
 manager.on('session_completed', (data) => {
   const id = data.server.id;
   const sessionString = (data.sessionType || 'unknown').toLowerCase();
-  
   let sessionKey = 'unknown';
   if (sessionString === 'qualifying') sessionKey = 'qualifying';
   else if (sessionString === 'race') sessionKey = 'race';
   else if (sessionString === 'practice') sessionKey = 'practice';
 
-  // Only tally if it didn't crash this session
   if (!data.server.hasCrashedThisSession && sessionKey !== 'unknown') {
     if (!serverStats[id]) {
       serverStats[id] = { 
@@ -161,345 +120,127 @@ manager.on('session_completed', (data) => {
         history: []
       };
     }
-    
     serverStats[id].completed.total++;
     serverStats[id].completed[sessionKey]++;
     saveStats();
   }
-  
-  // Reset flag for the next session
   data.server.hasCrashedThisSession = false;
 });
 
-// Send an alert when a Region-level mass disconnect occurs (Multiple IPs in same region)
-manager.on('mass_disconnect_region', async (data) => {
-  console.log(`[ALERT] REGION LEVEL DISCONNECT in ${data.region}`);
-  if (!ALERT_CHANNEL_ID) return;
+// Start the background monitoring process
+manager.start();
 
-  const channel = await client.channels.fetch(ALERT_CHANNEL_ID).catch(() => null);
-  if (!channel) return;
-
-  const embed = new EmbedBuilder()
-    .setTitle('🚨 CRITICAL: Data Center Routing Outage')
-    .setColor(0x8B0000)
-    .setDescription(`Multiple physical machines in the **${data.region}** region just experienced simultaneous driver drops. This strongly indicates a regional data center outage!`)
-    .addFields(
-      { name: 'Region', value: data.region, inline: true },
-      { name: 'Machines Affected', value: `${data.machinesAffected}`, inline: true },
-      { name: 'Servers Affected', value: `${data.serversAffected}`, inline: true },
-      { name: 'Total Drivers Dropped', value: `${data.dropCount} within 30s`, inline: true }
-    )
-    .setTimestamp();
-
-  try {
-    await channel.send({ content: '@here', embeds: [embed] });
-  } catch (err) {
-    console.error('❌ Failed to send Discord alert:', err.message);
-  }
-});
-
-// Send an alert when a Machine-level mass disconnect occurs (Multiple servers on same IP)
-manager.on('mass_disconnect_machine', async (data) => {
-  console.log(`[ALERT] MACHINE LEVEL DISCONNECT on ${data.machineIp}`);
-  if (!ALERT_CHANNEL_ID) return;
-
-  const channel = await client.channels.fetch(ALERT_CHANNEL_ID).catch(() => null);
-  if (!channel) return;
-
-  const embed = new EmbedBuilder()
-    .setTitle('🛑 CRITICAL: Hardware Node Failure')
-    .setColor(0x8B0000)
-    .setDescription(`Multiple servers hosted on the exact same physical machine just dropped simultaneously. This indicates a hardware node failure.`)
-    .addFields(
-      { name: 'Machine IP', value: data.machineIp, inline: true },
-      { name: 'Region', value: data.region, inline: true },
-      { name: 'Servers Affected', value: `${data.serversAffected}`, inline: true },
-      { name: 'Total Drivers Dropped', value: `${data.dropCount} within 30s`, inline: true }
-    )
-    .setTimestamp();
-
-  try {
-    await channel.send({ content: '@here', embeds: [embed] });
-  } catch (err) {
-    console.error('❌ Failed to send Discord alert:', err.message);
-  }
-});
-
-// Send an alert when an FTP server goes offline entirely
-manager.on('ftp_offline', async (data) => {
-  console.log(`[ALERT] FTP OFFLINE on ${data.server.name}`);
-  if (!ALERT_CHANNEL_ID) return;
-
-  const channel = await client.channels.fetch(ALERT_CHANNEL_ID).catch(() => null);
-  if (!channel) return;
-
-  const embed = new EmbedBuilder()
-    .setTitle('⚠️ FTP Server Offline Alert')
-    .setColor(0xFFA500) // Orange
-    .setDescription(`Failed to connect to the FTP server after 3 attempts.`)
-    .addFields(
-      { name: 'Server', value: data.server.name ? data.server.name.split('|')[0].trim() : 'Unknown', inline: true },
-      { name: 'Region', value: data.server.region, inline: true },
-      { name: 'Machine IP', value: data.server.machineIp, inline: false },
-      { name: 'Error', value: data.error, inline: false }
-    )
-    .setTimestamp();
-
-  try {
-    await channel.send({ embeds: [embed] });
-  } catch (err) {
-    console.error('❌ Failed to send Discord alert. Check bot permissions in that channel:', err.message);
-  }
-});
-
-// Helper function to send long lists as multiple embedded messages to avoid Discord's 4096 char limit
-async function sendChunkedEmbeds(message, title, color, lines, emptyMessage) {
-  if (lines.length === 0) {
-    const embed = new EmbedBuilder().setTitle(title).setColor(color).setDescription(emptyMessage);
-    await message.reply({ embeds: [embed] });
-    return;
-  }
-
-  let currentChunk = [];
-  let currentLength = 0;
-  let currentTitle = title;
-
-  for (const line of lines) {
-    if (currentLength + line.length + 1 > 4000) {
-      const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n'));
-      await message.reply({ embeds: [embed] });
-      currentChunk = [line];
-      currentLength = line.length;
-      currentTitle = `${title} (Cont.)`;
-    } else {
-      currentChunk.push(line);
-      currentLength += line.length + 1;
-    }
-  }
-
-  if (currentChunk.length > 0) {
-    const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n'));
-    await message.reply({ embeds: [embed] });
-  }
-}
-
-// Simple command to check status
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
-
-  if (message.content.toLowerCase() === '!status') {
-    message.reply(`📡 Currently monitoring ${serverConfigs.length} servers across Germany, US East, and Australia.`);
-  }
-
-  if (message.content.toLowerCase() === '!players') {
-    const active = [];
-    let emptyCount = 0;
-
-    for (const [id, monitor] of manager.monitors.entries()) {
-      const drivers = monitor.analyzer.connectedDrivers || 0;
-      if (drivers > 0) {
-        active.push(`- **${monitor.ftp.config.name}**: ${drivers} players`);
-      } else {
-        emptyCount++;
-      }
-    }
-
-    const title = '📊 Current Server Population';
-    const color = 0x00FF00;
-    
-    if (active.length === 0) {
-      const embed = new EmbedBuilder().setTitle(title).setColor(color).setDescription('All servers are currently empty.').setFooter({ text: `${emptyCount} servers are currently empty.` });
-      await message.reply({ embeds: [embed] });
-    } else {
-      // Chunk it manually to add the footer to the last chunk
-      let currentChunk = [];
-      let currentLength = 0;
-      let currentTitle = title;
-      
-      for (const line of active) {
-        if (currentLength + line.length + 1 > 4000) {
-          const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n'));
-          await message.reply({ embeds: [embed] });
-          currentChunk = [line];
-          currentLength = line.length;
-          currentTitle = `${title} (Cont.)`;
-        } else {
-          currentChunk.push(line);
-          currentLength += line.length + 1;
-        }
-      }
-      if (currentChunk.length > 0) {
-        const embed = new EmbedBuilder().setTitle(currentTitle).setColor(color).setDescription(currentChunk.join('\n')).setFooter({ text: `${emptyCount} servers are currently empty.` });
-        await message.reply({ embeds: [embed] });
-      }
-    }
-  }
-
-  if (message.content.toLowerCase() === '!disconnects' || message.content.toLowerCase() === '!crashes') {
-    const leaderboard = Object.entries(serverStats)
-      .sort((a, b) => b[1].crashes.total - a[1].crashes.total) // Sort descending by total crashes
-      .map(([id, stats]) => {
-        const config = serverConfigs.find(s => s.id === id);
-        const name = config ? config.name : id;
-        const region = config ? config.region : '';
-        const emoji = region === 'EU' ? '🔴 ' : (region === 'US' ? '🔵 ' : '');
-        
-        let crashBreakdown = [];
-        if (stats.crashes.race > 0) crashBreakdown.push(`${stats.crashes.race} Race`);
-        if (stats.crashes.qualifying > 0) crashBreakdown.push(`${stats.crashes.qualifying} Quali`);
-        if (stats.crashes.practice > 0) crashBreakdown.push(`${stats.crashes.practice} Prac`);
-        if (stats.crashes.unknown > 0) crashBreakdown.push(`${stats.crashes.unknown} Unk`);
-        
-        const now = Date.now();
-        const dailyCrashes = (stats.history || []).filter(e => e.type === 'crash' && (now - new Date(e.timestamp).getTime()) <= 24 * 60 * 60 * 1000).length;
-        const dailyStr = dailyCrashes > 0 ? ` **(${dailyCrashes} Today)**` : ' **(0 Today)**';
-        
-        const crashStr = crashBreakdown.length > 0 ? ` (${crashBreakdown.join(', ')})` : '';
-        return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes${dailyStr}${crashStr}`;
-      });
-      
-    await sendChunkedEmbeds(message, '📈 Server Disconnect Tally', 0xFF0000, leaderboard, 'No mass disconnects recorded yet! 🎉');
-  }
-
-  if (message.content.toLowerCase() === '!completed' || message.content.toLowerCase() === '!reliability') {
-    const leaderboard = Object.entries(serverStats)
-      .sort((a, b) => b[1].completed.race - a[1].completed.race) // Sort descending by completed races
-      .map(([id, stats]) => {
-        const config = serverConfigs.find(s => s.id === id);
-        const name = config ? config.name : id;
-        const region = config ? config.region : '';
-        const emoji = region === 'EU' ? '🔴 ' : (region === 'US' ? '🔵 ' : '');
-        
-        return `- ${emoji}**${name}**: ${stats.crashes.total} Crashes / ${stats.completed.race} Completed Races`;
-      });
-      
-    await sendChunkedEmbeds(message, '✅ Server Reliability Tally', 0x00FF00, leaderboard, 'No successful races recorded yet! 🏁');
-  }
-
-  if (message.content.toLowerCase().startsWith('!addcrash')) {
-    const args = message.content.toLowerCase().split(' ');
-    // Format: !addcrash acl82 2 [session]
-    if (args.length >= 3) {
-      const serverId = args[1]; // e.g. "acl82"
-      const count = parseInt(args[2], 10);
-      const sessionArg = args[3] || 'unknown';
-      let sessionKey = 'unknown';
-      if (sessionArg.startsWith('q')) sessionKey = 'qualifying';
-      else if (sessionArg.startsWith('r')) sessionKey = 'race';
-      else if (sessionArg.startsWith('p')) sessionKey = 'practice';
-
-      if (!isNaN(count)) {
-        if (!serverStats[serverId]) {
-           serverStats[serverId] = { 
-             crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
-             completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
-             history: []
-           };
-        }
-        serverStats[serverId].crashes.total += count;
-        serverStats[serverId].crashes[sessionKey] = (serverStats[serverId].crashes[sessionKey] || 0) + count;
-        
-        for (let i = 0; i < count; i++) {
-          serverStats[serverId].history.push({
-            type: 'crash (manual addition)',
-            session: sessionKey,
-            timestamp: new Date().toISOString()
-          });
-        }
-        
-        saveStats();
-        message.reply(`✅ Added ${count} crashes to ${serverId} under ${sessionKey}. It now has ${serverStats[serverId].crashes.total} total crashes.`);
-      }
-    }
-  }
-
-  if (message.content.toLowerCase().startsWith('!restoredata')) {
-    // !restoredata acl41=2/29 acl82=2/21
-    const args = message.content.toLowerCase().split(' ').slice(1);
-    let count = 0;
-    
-    for (const arg of args) {
-      const [serverId, stats] = arg.split('=');
-      if (!serverId || !stats) continue;
-      
-      const [crashes, completed] = stats.split('/');
-      const parsedCrashes = parseInt(crashes, 10);
-      const parsedCompleted = parseInt(completed, 10);
-      
-      if (!isNaN(parsedCrashes) && !isNaN(parsedCompleted)) {
-        if (!serverStats[serverId]) {
-           serverStats[serverId] = { 
-             crashes: { total: 0, qualifying: 0, race: 0, practice: 0, unknown: 0 },
-             completed: { total: 0, qualifying: 0, race: 0, practice: 0 },
-             history: []
-           };
-        }
-        serverStats[serverId].crashes.total = parsedCrashes;
-        serverStats[serverId].completed.race = parsedCompleted;
-        count++;
-      }
-    }
-    
-    if (count > 0) {
-      saveStats();
-      message.reply(`✅ Successfully restored data for ${count} servers! Run !reliability to verify.`);
-    } else {
-      message.reply(`⚠️ No valid data parsed. Use format: !restoredata acl41=2/29`);
-    }
-  }
-
-  if (message.content.toLowerCase().startsWith('!history')) {
-    const args = message.content.toLowerCase().split(' ');
-    if (args.length >= 2) {
-      const serverId = args[1];
-      const stats = serverStats[serverId];
-      
-      if (!stats || !stats.history || stats.history.length === 0) {
-        message.reply(`No crash history recorded for ${serverId} yet.`);
-        return;
-      }
-      
-      const config = serverConfigs.find(s => s.id === serverId);
-      const name = config ? config.name : serverId;
-      
-      // Get the last 100 crashes
-      const recentHistory = stats.history.slice(-100).reverse();
-      
-      const historyLines = recentHistory.map(entry => {
-        // Format: MM/DD/YYYY, HH:MM:SS
-        const time = new Date(entry.timestamp).toLocaleString('en-GB', { timeZone: 'Europe/London' });
-        return `- **${time}**: ${entry.type} during ${entry.session}`;
-      });
-      
-      // Split into chunks of 40 to avoid Discord's 4096 character embed limit
-      const chunkSize = 40;
-      for (let i = 0; i < historyLines.length; i += chunkSize) {
-        const chunk = historyLines.slice(i, i + chunkSize);
-        const embed = new EmbedBuilder()
-          .setTitle(i === 0 ? `🕒 Crash History: ${name}` : `🕒 Crash History: ${name} (Cont.)`)
-          .setColor(0x3498DB)
-          .setDescription(chunk.join('\n'));
-          
-        message.reply({ embeds: [embed] });
-      }
-    }
-  }
-});
-
-import http from 'http';
-
-if (!TOKEN) {
-  console.error("❌ ERROR: DISCORD_TOKEN is missing in the .env file.");
-  process.exit(1);
-}
-
-client.login(TOKEN);
-
-// Add a dummy HTTP server to satisfy Railway's port binding health check
+// Start Express Web Dashboard
+const app = express();
 const PORT = process.env.PORT || 3000;
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('ACL Server Monitor Bot is running!\n');
-}).listen(PORT, () => {
-  console.log(`🌐 Dummy web server listening on port ${PORT} for Railway health checks.`);
+
+app.use(cors());
+app.use(express.static(path.resolve(process.cwd(), 'public')));
+
+function getDateBounds(req) {
+  let sinceDate, endDate = null;
+  
+  if (req.query.startDate) {
+    sinceDate = req.query.startDate;
+    if (req.query.endDate) {
+      endDate = req.query.endDate;
+    }
+  } else {
+    // Fallback logic for All Time or defaults
+    const tf = (req.query.timeframe || 'weekly').toLowerCase();
+    if (tf === 'all-time') {
+      sinceDate = new Date(0).toISOString();
+    } else {
+      // Default to last 7 days
+      sinceDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    }
+  }
+  return { sinceDate, endDate };
+}
+
+app.get('/api/reports', async (req, res) => {
+  try {
+    const { sinceDate, endDate } = getDateBounds(req);
+    const reason = req.query.reason || null;
+    const results = await manager.reportManager.getLeaderboard(sinceDate, endDate, reason);
+    res.json(results);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get('/api/reporters', async (req, res) => {
+  try {
+    const { sinceDate, endDate } = getDateBounds(req);
+    const reason = req.query.reason || null;
+    const results = await manager.reportManager.getReporters(sinceDate, endDate, reason);
+    res.json(results);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get('/api/retaliations', async (req, res) => {
+  try {
+    const { sinceDate, endDate } = getDateBounds(req);
+    const reason = req.query.reason || null;
+    const results = await manager.reportManager.getRetaliations(sinceDate, endDate, reason);
+    res.json(results);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get('/api/heatmaps', async (req, res) => {
+  try {
+    const { sinceDate, endDate } = getDateBounds(req);
+    const reason = req.query.reason || null;
+    
+    const results = await manager.reportManager.getHeatmap(sinceDate, endDate, reason);
+    
+    // Attach the track name to each server result
+    const enrichedResults = results.map(r => {
+      // Clean up server ID (e.g. acl82 -> ACL 82)
+      let cleanServerId = r.server_id.toUpperCase();
+      if (cleanServerId.startsWith('ACL') && cleanServerId.length > 3) {
+        cleanServerId = `ACL ${cleanServerId.substring(3).trim()}`;
+      }
+
+      const config = serverConfigs.find(s => s.id === r.server_id || s.id.toLowerCase() === r.server_id.toLowerCase());
+      
+      // Try to get the LIVE track name directly from the active FTP monitor (event.json)
+      let liveTrack = null;
+      for (const [id, monitor] of manager.monitors.entries()) {
+        if (id.toLowerCase() === r.server_id.toLowerCase() && monitor.ftp.config.liveTrack) {
+          liveTrack = monitor.ftp.config.liveTrack;
+          break;
+        }
+      }
+
+      // If no live track, try to extract from config name (e.g. "ACL 42 (spa)")
+      if (!liveTrack && config && config.name) {
+        const match = config.name.match(/\((.*?)\)/);
+        if (match) liveTrack = match[1];
+      }
+
+      return {
+        ...r,
+        server_name: cleanServerId,
+        track: liveTrack || 'Unknown'
+      };
+    });
+    
+    res.json(enrichedResults);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`🌐 Dashboard web server listening on port ${PORT}`);
+  console.log(`✅ App started! View the dashboard at http://localhost:${PORT}`);
 });

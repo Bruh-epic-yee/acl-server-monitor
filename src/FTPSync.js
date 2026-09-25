@@ -35,13 +35,26 @@ export class FTPSync {
       });
 
       // ACC log files are typically in a 'log' folder on FTP
-      // We attempt to download the active server.log
-      // Depending on FTP structure, adjust the remote path as necessary
+      // We attempt to download the active server.log and playerReports.log
       await client.downloadTo(localLogPath, 'log/server.log');
+      
+      const localReportPath = path.join(this.dataDir, 'playerReports.log');
+      try {
+        await client.downloadTo(localReportPath, 'log/playerReports.log');
+      } catch(err) {
+        // Some servers might not have playerReports.log yet, ignore this error
+      }
+      
+      const localEventPath = path.join(this.dataDir, 'event.json');
+      try {
+        await client.downloadTo(localEventPath, 'cfg/event.json');
+      } catch(err) {
+        // Ignore if event.json is missing or failed
+      }
       
       this.isSyncing = false;
       client.close();
-      return { success: true, logPath: localLogPath };
+      return { success: true, logPath: localLogPath, reportPath: localReportPath, eventPath: localEventPath };
 
     } catch (error) {
       // It's normal for some servers to be offline, so we handle gracefully

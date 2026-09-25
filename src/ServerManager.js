@@ -1,8 +1,10 @@
 import events from 'events';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { FTPSync } from './FTPSync.js';
 import { LogAnalyzer } from './LogAnalyzer.js';
+import { ReportManager } from './ReportManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,11 +16,13 @@ export class ServerManager extends events.EventEmitter {
     this.configs = serverConfigs;
     this.monitors = new Map(); // id -> { ftp, analyzer }
     this.disconnectEvents = []; 
+    this.reportManager = new ReportManager();
     
     this.TIME_WINDOW_MS = 15 * 1000; // 15 seconds window
   }
 
-  start() {
+  async start() {
+    await this.reportManager.init();
     console.log(`[ServerManager] Starting monitoring for ${this.configs.length} servers...`);
     
     this.configs.forEach((config, index) => {
@@ -93,6 +97,34 @@ export class ServerManager extends events.EventEmitter {
       }
       
       await monitor.analyzer.analyze(result.logPath);
+      
+      if (result.reportPath) {
+        await this.reportManager.processLogFile(serverId, result.reportPath);
+      }
+      
+      if (result.eventPath && fs.existsSync(result.eventPath)) {
+        try {
+          // ACC config files are encoded in UTF-16LE
+          const fileBuffer = fs.readFileSync(result.eventPath);
+          let eventDataString = fileBuffer.toString('utf16le');
+          
+          if (eventDataString.charCodeAt(0) === 0xFEFF) {
+            eventDataString = eventDataString.slice(1);
+          }
+          
+          // Fallback if not utf-16 (sometimes they get saved as utf8 by admins)
+          if (eventDataString.includes('\u0000')) {
+             eventDataString = fileBuffer.toString('utf8');
+          }
+          
+          const eventData = JSON.parse(eventDataString);
+          if (eventData.track) {
+            monitor.ftp.config.liveTrack = eventData.track;
+          }
+        } catch(e) {
+          // ignore parsing errors
+        }
+      }
       
       // If it came back online after being offline, we can reset the counter
       monitor.offlineCount = 0;

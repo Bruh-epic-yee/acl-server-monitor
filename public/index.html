@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ACL Player Reports Dashboard">
+  <title>ACL Player Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-elements">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <main class="container">
+    <header class="glass-header">
+      <div class="logo-container">
+        <h1 class="gradient-text">ACL Reports Dashboard</h1>
+        <p class="subtitle">Identify and manage disruptive drivers across all servers.</p>
+      </div>
+      <div class="controls-container">
+        <div class="search-wrapper">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search driver name..." autocomplete="off" />
+          <button id="clearSearchBtn" class="clear-search-btn hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="filters">
+          <div class="custom-select-wrapper" id="weeklyDropdownWrapper">
+            <button class="filter-btn active" id="weeklyDropdownBtn">
+              <span class="selected-text">Week</span>
+              <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="custom-options" id="weeklyOptions"></div>
+          </div>
+
+          <div class="custom-select-wrapper" id="monthlyDropdownWrapper">
+            <button class="filter-btn" id="monthlyDropdownBtn">
+              <span class="selected-text">Month</span>
+              <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="custom-options" id="monthlyOptions"></div>
+          </div>
+
+          <button id="allTimeBtn" class="filter-btn" data-timeframe="all-time">All Time</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="summary-cards">
+      <div class="summary-card glass-panel">
+        <div class="card-icon blue">📋</div>
+        <div class="card-content">
+          <h3>Total Reports</h3>
+          <p id="totalReportsCard">0</p>
+        </div>
+      </div>
+      <div class="summary-card glass-panel">
+        <div class="card-icon red">🚨</div>
+        <div class="card-content">
+          <h3>Most Dangerous</h3>
+          <p id="mostDangerousCard">-</p>
+        </div>
+      </div>
+      <div class="summary-card glass-panel">
+        <div class="card-icon orange">🔥</div>
+        <div class="card-content">
+          <h3>Hottest Server</h3>
+          <p id="hottestServerCard">-</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="main-nav glass-nav">
+      <button class="tab-btn active" data-tab="danger">🚨 Danger Score (All)</button>
+      <button class="tab-btn" data-tab="danger-bad">🤬 Bad Behavior</button>
+      <button class="tab-btn" data-tab="danger-cheat">🛠️ Cheating</button>
+      <button class="tab-btn" data-tab="reporters">🗣️ Top Reporters</button>
+      <button class="tab-btn" data-tab="retaliations">⚔️ Mutual Retaliations</button>
+      <button class="tab-btn" data-tab="heatmap">🗺️ Server Heatmap</button>
+    </nav>
+
+    <div class="table-container glass-panel">
+      <!-- Dynamic Table Header -->
+      <table id="reportsTable">
+        <thead id="tableHead">
+          <tr>
+            <th>Rank</th>
+            <th>Nickname</th>
+            <th>Player ID</th>
+            <th>Unique Reports</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Data will be injected here via JS -->
+        </tbody>
+      </table>
+      <div id="loadingState" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading reports...</p>
+      </div>
+      <div id="emptyState" class="empty-state hidden">
+        <p>No data found for this timeframe! 🎉</p>
+      </div>
+    </div>
+  </main>
+  
+  <script src="script.js"></script>
+</body>
+</html>
