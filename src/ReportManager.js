@@ -136,6 +136,23 @@ export class ReportManager {
     return results;
   }
 
+  async getDriverServerBreakdown(driverId, sinceDate, endDate = null, reason = null) {
+    if (!this.db) return [];
+    
+    const results = await this.db.all(`
+      SELECT server_id, COUNT(id) as report_count
+      FROM reports
+      WHERE reported_id = ?
+        AND timestamp >= ? 
+        AND (? IS NULL OR timestamp < ?)
+        AND (? IS NULL OR reported_reason = ?)
+      GROUP BY server_id
+      ORDER BY report_count DESC
+    `, [driverId, sinceDate, endDate, endDate, reason, reason]);
+    
+    return results;
+  }
+
   async getReporters(sinceDate, endDate = null, reason = null) {
     if (!this.db) return [];
     

@@ -261,6 +261,36 @@ app.get('/api/server-leaderboard', async (req, res) => {
   }
 });
 
+app.get('/api/driver-breakdown', async (req, res) => {
+  try {
+    const { sinceDate, endDate } = getDateBounds(req);
+    const reason = req.query.reason || null;
+    const driverId = req.query.driverId;
+    
+    if (!driverId) {
+      return res.status(400).json({ error: "Missing driverId parameter" });
+    }
+    
+    const results = await manager.reportManager.getDriverServerBreakdown(driverId, sinceDate, endDate, reason);
+    
+    const enrichedResults = results.map(r => {
+      let cleanServerId = r.server_id.toUpperCase();
+      if (cleanServerId.startsWith('ACL') && cleanServerId.length > 3) {
+        cleanServerId = `ACL ${cleanServerId.substring(3).trim()}`;
+      }
+      return {
+        ...r,
+        server_name: cleanServerId
+      };
+    });
+    
+    res.json(enrichedResults);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🌐 Dashboard web server listening on port ${PORT}`);
   console.log(`✅ App started! View the dashboard at http://localhost:${PORT}`);

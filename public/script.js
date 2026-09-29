@@ -62,19 +62,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (index < 3) tr.classList.add(`rank-${index + 1}`);
 
       if (currentTab.startsWith('danger')) {
+        tr.classList.add('clickable-row');
+        tr.title = "Click to view server breakdown for this driver";
+        
         tr.innerHTML = `
           <td><div class="rank-badge">${index + 1}</div></td>
           <td class="player-nick">${escapeHtml(item.reported_nickname)}</td>
           <td>
             <div class="player-id-container">
               <span class="player-id" id="pid-${index}">${escapeHtml(item.reported_id)}</span>
-              <button class="copy-btn" onclick="copyToClipboard('pid-${index}')" title="Copy ID">
+              <button class="copy-btn" onclick="copyToClipboard('pid-${index}'); event.stopPropagation();" title="Copy ID">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </button>
             </div>
           </td>
           <td class="report-count">${item.report_count}</td>
         `;
+        
+        tr.addEventListener('click', () => toggleDriverDetails(item.reported_id, tr));
       } else if (currentTab === 'reporters') {
         const nickDisplay = item.reporter_nickname ? `${escapeHtml(item.reporter_nickname)}<br><small style="color:var(--text-muted)">${escapeHtml(item.reporter_id)}</small>` : `<small style="color:var(--text-muted)">${escapeHtml(item.reporter_id)}</small>`;
         tr.innerHTML = `
@@ -173,6 +178,66 @@ document.addEventListener('DOMContentLoaded', () => {
             <td class="player-nick">${escapeHtml(driver.reported_nickname)}</td>
             <td class="player-id">${escapeHtml(driver.reported_id)}</td>
             <td class="report-count">${driver.report_count}</td>
+          </tr>`;
+        });
+      }
+      html += '</tbody></table>';
+      td.querySelector('.expanded-content').innerHTML = html;
+      
+    } catch (err) {
+      td.querySelector('.expanded-content').innerHTML = `<div style="color:var(--accent-2); text-align:center;">Failed to load data</div>`;
+      console.error(err);
+    }
+  };
+
+  const toggleDriverDetails = async (driverId, rowElement) => {
+    const nextRow = rowElement.nextElementSibling;
+    if (nextRow && nextRow.classList.contains('expanded-details')) {
+      nextRow.remove();
+      return;
+    }
+    
+    document.querySelectorAll('.expanded-details').forEach(el => el.remove());
+    
+    const detailsRow = document.createElement('tr');
+    detailsRow.className = 'expanded-details';
+    const td = document.createElement('td');
+    td.colSpan = 4;
+    td.innerHTML = `<div class="expanded-content">
+      <div class="spinner"></div>
+    </div>`;
+    detailsRow.appendChild(td);
+    rowElement.after(detailsRow);
+    
+    try {
+      let query = `?driverId=${encodeURIComponent(driverId)}&timeframe=${currentTimeframe}`;
+      if (currentStartDate && currentEndDate) {
+        query += `&startDate=${currentStartDate}&endDate=${currentEndDate}`;
+      }
+      
+      if (currentTab === 'danger-cheating') query += `&reason=CHEATING`;
+      if (currentTab === 'danger-bad') query += `&reason=BAD%20BEHAVIOR`;
+      
+      const res = await fetch(`/api/driver-breakdown${query}`);
+      if (!res.ok) throw new Error('Failed to fetch data');
+      const data = await res.json();
+      
+      let html = `<table class="sub-table">
+        <thead>
+          <tr>
+            <th>Server</th>
+            <th>Unique Reports</th>
+          </tr>
+        </thead>
+        <tbody>`;
+        
+      if (data.length === 0) {
+        html += '<tr><td colspan="2" style="text-align:center; padding: 20px;">No server breakdown found for this driver in the selected timeframe.</td></tr>';
+      } else {
+        data.forEach((server) => {
+          html += `<tr>
+            <td class="player-nick">${escapeHtml(server.server_name)}</td>
+            <td class="report-count">${server.report_count}</td>
           </tr>`;
         });
       }
