@@ -137,23 +137,23 @@ document.addEventListener('DOMContentLoaded', () => {
     detailsRow.className = 'expanded-details';
     const td = document.createElement('td');
     td.colSpan = 4;
-    td.innerHTML = \`<div class="expanded-content">
+    td.innerHTML = `<div class="expanded-content">
       <div class="spinner"></div>
-    </div>\`;
+    </div>`;
     detailsRow.appendChild(td);
     rowElement.after(detailsRow);
     
     try {
-      let query = \`?serverId=\${encodeURIComponent(serverId)}&timeframe=\${currentTimeframe}\`;
+      let query = `?serverId=${encodeURIComponent(serverId)}&timeframe=${currentTimeframe}`;
       if (currentStartDate && currentEndDate) {
-        query += \`&startDate=\${currentStartDate}&endDate=\${currentEndDate}\`;
+        query += `&startDate=${currentStartDate}&endDate=${currentEndDate}`;
       }
       
-      const res = await fetch(\`/api/server-leaderboard\${query}\`);
+      const res = await fetch(`/api/server-leaderboard${query}`);
       if (!res.ok) throw new Error('Failed to fetch data');
       const data = await res.json();
       
-      let html = \`<table class="sub-table">
+      let html = `<table class="sub-table">
         <thead>
           <tr>
             <th>Rank</th>
@@ -162,25 +162,25 @@ document.addEventListener('DOMContentLoaded', () => {
             <th>Unique Reports</th>
           </tr>
         </thead>
-        <tbody>\`;
+        <tbody>`;
         
       if (data.length === 0) {
         html += '<tr><td colspan="4" style="text-align:center; padding: 20px;">No driver data found for this server in the selected timeframe.</td></tr>';
       } else {
         data.slice(0, 50).forEach((driver, idx) => { // show top 50
-          html += \`<tr>
-            <td>\${idx + 1}</td>
-            <td class="player-nick">\${escapeHtml(driver.reported_nickname)}</td>
-            <td class="player-id">\${escapeHtml(driver.reported_id)}</td>
-            <td class="report-count">\${driver.report_count}</td>
-          </tr>\`;
+          html += `<tr>
+            <td>${idx + 1}</td>
+            <td class="player-nick">${escapeHtml(driver.reported_nickname)}</td>
+            <td class="player-id">${escapeHtml(driver.reported_id)}</td>
+            <td class="report-count">${driver.report_count}</td>
+          </tr>`;
         });
       }
       html += '</tbody></table>';
       td.querySelector('.expanded-content').innerHTML = html;
       
     } catch (err) {
-      td.querySelector('.expanded-content').innerHTML = \`<div style="color:var(--accent-2); text-align:center;">Failed to load data</div>\`;
+      td.querySelector('.expanded-content').innerHTML = `<div style="color:var(--accent-2); text-align:center;">Failed to load data</div>`;
       console.error(err);
     }
   };
