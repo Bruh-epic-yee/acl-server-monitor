@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { ServerManager } from './src/ServerManager.js';
+import { startDiscordBot } from './src/DiscordBot.js';
 
 dotenv.config();
 
@@ -129,6 +130,9 @@ manager.on('session_completed', (data) => {
 
 // Start the background monitoring process
 manager.start();
+
+// Start Discord Bot
+startDiscordBot(manager, serverConfigs, serverStats, saveStats);
 
 // Start Express Web Dashboard
 const app = express();
