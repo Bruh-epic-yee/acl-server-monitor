@@ -240,6 +240,27 @@ app.get('/api/heatmaps', async (req, res) => {
   }
 });
 
+app.get('/api/server-leaderboard', async (req, res) => {
+  try {
+    const { sinceDate, endDate } = getDateBounds(req);
+    const reason = req.query.reason || null;
+    const serverId = req.query.serverId;
+    
+    if (!serverId) {
+      return res.status(400).json({ error: "Missing serverId parameter" });
+    }
+    
+    // Reverse the display formatting if needed (e.g. "ACL 82" -> "acl82")
+    let cleanServerId = serverId.toLowerCase().replace(/\s+/g, '');
+    
+    const results = await manager.reportManager.getServerLeaderboard(cleanServerId, sinceDate, endDate, reason);
+    res.json(results);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🌐 Dashboard web server listening on port ${PORT}`);
   console.log(`✅ App started! View the dashboard at http://localhost:${PORT}`);

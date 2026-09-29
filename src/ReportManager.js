@@ -119,6 +119,23 @@ export class ReportManager {
     return results;
   }
 
+  async getServerLeaderboard(serverId, sinceDate, endDate = null, reason = null) {
+    if (!this.db) return [];
+    
+    const results = await this.db.all(`
+      SELECT reported_id, reported_nickname, COUNT(id) as report_count
+      FROM reports
+      WHERE server_id = ?
+        AND timestamp >= ? 
+        AND (? IS NULL OR timestamp < ?)
+        AND (? IS NULL OR reported_reason = ?)
+      GROUP BY reported_id, reported_nickname
+      ORDER BY report_count DESC
+    `, [serverId, sinceDate, endDate, endDate, reason, reason]);
+    
+    return results;
+  }
+
   async getReporters(sinceDate, endDate = null, reason = null) {
     if (!this.db) return [];
     

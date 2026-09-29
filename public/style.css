@@ -529,6 +529,60 @@ tbody tr:hover td {
   z-index: 1;
 }
 
+.clickable-row {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.clickable-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.expanded-details td {
+  padding: 0 !important;
+  background: rgba(15, 23, 42, 0.7);
+  border-bottom: none !important;
+}
+
+.expanded-content {
+  padding: 0 20px 20px 20px;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+}
+
+.sub-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sub-table th, .sub-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.sub-table th {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.8rem;
+}
+
+.sub-table tr:last-child td {
+  border-bottom: none;
+}
+
+@keyframes slideDown {
+  from { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+  to { max-height: 2000px; opacity: 1; padding-top: 0; padding-bottom: 20px; }
+}
+
 @media (max-width: 768px) {
   .glass-header { flex-direction: column; align-items: flex-start; }
   .table-container { padding: 15px; overflow-x: auto; }

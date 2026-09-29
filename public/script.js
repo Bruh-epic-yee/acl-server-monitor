@@ -93,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxReports = data[0] ? data[0].report_count : 1;
         const barWidth = Math.max(5, (item.report_count / maxReports) * 100);
         
+        tr.classList.add('clickable-row');
+        tr.title = "Click to view top reported drivers for this server";
+        
         tr.innerHTML = `
           <td><div class="rank-badge">${index + 1}</div></td>
           <td class="player-nick">${escapeHtml(item.server_name)}</td>
@@ -104,6 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </td>
         `;
+        
+        tr.addEventListener('click', () => toggleServerDetails(item.server_name, tr));
       }
       
       tr.style.opacity = '0';
@@ -115,6 +120,69 @@ document.addEventListener('DOMContentLoaded', () => {
       
       tableBody.appendChild(tr);
     });
+  };
+
+  const toggleServerDetails = async (serverId, rowElement) => {
+    const nextRow = rowElement.nextElementSibling;
+    if (nextRow && nextRow.classList.contains('expanded-details')) {
+      // Toggle off
+      nextRow.remove();
+      return;
+    }
+    
+    // Close any other open ones (optional, but keeps UI clean)
+    document.querySelectorAll('.expanded-details').forEach(el => el.remove());
+    
+    const detailsRow = document.createElement('tr');
+    detailsRow.className = 'expanded-details';
+    const td = document.createElement('td');
+    td.colSpan = 4;
+    td.innerHTML = \`<div class="expanded-content">
+      <div class="spinner"></div>
+    </div>\`;
+    detailsRow.appendChild(td);
+    rowElement.after(detailsRow);
+    
+    try {
+      let query = \`?serverId=\${encodeURIComponent(serverId)}&timeframe=\${currentTimeframe}\`;
+      if (currentStartDate && currentEndDate) {
+        query += \`&startDate=\${currentStartDate}&endDate=\${currentEndDate}\`;
+      }
+      
+      const res = await fetch(\`/api/server-leaderboard\${query}\`);
+      if (!res.ok) throw new Error('Failed to fetch data');
+      const data = await res.json();
+      
+      let html = \`<table class="sub-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Nickname</th>
+            <th>ID</th>
+            <th>Unique Reports</th>
+          </tr>
+        </thead>
+        <tbody>\`;
+        
+      if (data.length === 0) {
+        html += '<tr><td colspan="4" style="text-align:center; padding: 20px;">No driver data found for this server in the selected timeframe.</td></tr>';
+      } else {
+        data.slice(0, 50).forEach((driver, idx) => { // show top 50
+          html += \`<tr>
+            <td>\${idx + 1}</td>
+            <td class="player-nick">\${escapeHtml(driver.reported_nickname)}</td>
+            <td class="player-id">\${escapeHtml(driver.reported_id)}</td>
+            <td class="report-count">\${driver.report_count}</td>
+          </tr>\`;
+        });
+      }
+      html += '</tbody></table>';
+      td.querySelector('.expanded-content').innerHTML = html;
+      
+    } catch (err) {
+      td.querySelector('.expanded-content').innerHTML = \`<div style="color:var(--accent-2); text-align:center;">Failed to load data</div>\`;
+      console.error(err);
+    }
   };
 
   const weeklyDropdownBtn = document.getElementById('weeklyDropdownBtn');
