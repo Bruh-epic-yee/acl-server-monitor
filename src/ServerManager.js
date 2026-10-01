@@ -43,14 +43,8 @@ export class ServerManager extends events.EventEmitter {
       analyzer.on('server_reset', (event) => {
         const now = Date.now();
         const date = new Date();
-        const minutes = date.getMinutes();
         
-        // Scheduled restarts happen every 2-4 hours near the top of the hour.
-        // If the reset happens between xx:55 and xx:15, we assume it's scheduled and ignore it.
-        // We allow up to 15 minutes past the hour in case a massive batch of 40 servers takes a while to boot up.
-        const isScheduledRestart = (minutes >= 55 || minutes <= 15);
-        
-        if (isScheduledRestart) {
+        if (this.isScheduledRestart(config.id, date)) {
           return; // Silently ignore, don't trigger disconnect alerts or tally crashes
         }
 
@@ -246,5 +240,40 @@ export class ServerManager extends events.EventEmitter {
   cleanupOldEvents() {
     const now = Date.now();
     this.disconnectEvents = this.disconnectEvents.filter(e => now - e.localTime <= 60000);
+  }
+
+  isScheduledRestart(serverId, date) {
+    const ukTime = new Date(date.toLocaleString("en-US", {timeZone: "Europe/London"}));
+    const min = ukTime.getMinutes();
+    
+    // Scheduled restarts only trigger around the top of the hour.
+    if (min > 15 && min < 55) {
+      return false; // Definitely not a scheduled restart
+    }
+    
+    let effectiveHour = ukTime.getHours();
+    if (min >= 55) {
+        effectiveHour = (effectiveHour + 1) % 24;
+    }
+    
+    const id = serverId.toLowerCase().replace(/\s+/g, '');
+    
+    // 1. ACL 90, 92, 93: Every 4 hours (03, 07, 11, 15, 19, 23)
+    if (id === 'acl90' || id === 'acl92' || id === 'acl93') {
+      if (effectiveHour % 4 === 3) return true;
+    }
+    
+    // 2. ACL 36-40 (including B variations): Every 2 hours (00, 02, 04, 06, etc.)
+    const hourlyMatch = id.match(/^acl(3[6-9]|40)b?$/);
+    if (hourlyMatch) {
+      if (effectiveHour % 2 === 0) return true;
+    }
+    
+    // 3. All servers globally seem to have a daily restart at 07:00 AM UK
+    if (effectiveHour === 7) {
+      return true;
+    }
+    
+    return false;
   }
 }
