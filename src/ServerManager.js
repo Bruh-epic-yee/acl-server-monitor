@@ -42,6 +42,17 @@ export class ServerManager extends events.EventEmitter {
 
       analyzer.on('server_reset', (event) => {
         const now = Date.now();
+        const date = new Date();
+        const minutes = date.getMinutes();
+        
+        // Scheduled restarts happen every 4 hours near the top of the hour.
+        // If the reset happens between xx:55 and xx:05, we assume it's scheduled and ignore it.
+        const isScheduledRestart = (minutes >= 55 || minutes <= 5);
+        
+        if (isScheduledRestart) {
+          return; // Silently ignore, don't trigger disconnect alerts or tally crashes
+        }
+
         // Prevent duplicate reset alerts within a 60-second window
         if (!config.lastResetAlert || (now - config.lastResetAlert > 60000)) {
           config.lastResetAlert = now;
