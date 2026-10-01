@@ -46,9 +46,9 @@ export class ServerManager extends events.EventEmitter {
         const minutes = date.getMinutes();
         
         // Scheduled restarts happen every 2-4 hours near the top of the hour.
-        // If the reset happens between xx:55 and xx:10, we assume it's scheduled and ignore it.
-        // We allow up to 10 minutes past the hour in case the server takes a while to boot up and log.
-        const isScheduledRestart = (minutes >= 55 || minutes <= 10);
+        // If the reset happens between xx:55 and xx:15, we assume it's scheduled and ignore it.
+        // We allow up to 15 minutes past the hour in case a massive batch of 40 servers takes a while to boot up.
+        const isScheduledRestart = (minutes >= 55 || minutes <= 15);
         
         if (isScheduledRestart) {
           return; // Silently ignore, don't trigger disconnect alerts or tally crashes
