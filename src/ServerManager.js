@@ -44,7 +44,7 @@ export class ServerManager extends events.EventEmitter {
         const now = Date.now();
         const date = new Date();
         
-        if (this.isScheduledRestart(config.id, date)) {
+        if (this.isScheduledRestart(config, date)) {
           return; // Silently ignore, don't trigger disconnect alerts or tally crashes
         }
 
@@ -242,31 +242,40 @@ export class ServerManager extends events.EventEmitter {
     this.disconnectEvents = this.disconnectEvents.filter(e => now - e.localTime <= 60000);
   }
 
-  isScheduledRestart(serverId, date) {
-    const ukTime = new Date(date.toLocaleString("en-US", {timeZone: "Europe/London"}));
-    const min = ukTime.getMinutes();
+  isScheduledRestart(serverConfig, date) {
+    const ukHourRaw = parseInt(date.toLocaleString("en-GB", { timeZone: "Europe/London", hour: "numeric", hour12: false }), 10);
+    const ukHour = isNaN(ukHourRaw) ? date.getUTCHours() : (ukHourRaw % 24);
+    const minRaw = parseInt(date.toLocaleString("en-GB", { timeZone: "Europe/London", minute: "numeric" }), 10);
+    const min = isNaN(minRaw) ? date.getUTCMinutes() : minRaw;
     
     // Scheduled restarts only trigger around the top of the hour.
     if (min > 15 && min < 55) {
       return false; // Definitely not a scheduled restart
     }
     
-    let effectiveHour = ukTime.getHours();
+    let effectiveHour = ukHour;
     if (min >= 55) {
         effectiveHour = (effectiveHour + 1) % 24;
     }
     
-    const id = serverId.toLowerCase().replace(/\s+/g, '');
+    const id = serverConfig.id.toLowerCase().replace(/\s+/g, '');
+    const baseName = serverConfig.name ? serverConfig.name.split('|')[0].toLowerCase().replace(/\s+/g, '') : '';
     
-    // 1. ACL 90, 92, 93: Every 4 hours (03, 07, 11, 15, 19, 23)
-    if (id === 'acl90' || id === 'acl92' || id === 'acl93') {
-      if (effectiveHour % 4 === 3) return true;
-    }
+    const aliases = [id, baseName];
     
-    // 2. ACL 36-40 (including B variations): Every 2 hours (00, 02, 04, 06, etc.)
-    const hourlyMatch = id.match(/^acl(3[6-9]|40)b?$/);
-    if (hourlyMatch) {
-      if (effectiveHour % 2 === 0) return true;
+    for (const alias of aliases) {
+      if (!alias) continue;
+
+      // 1. ACL 90, 92, 93: Every 4 hours (03, 07, 11, 15, 19, 23)
+      if (alias === 'acl90' || alias === 'acl92' || alias === 'acl93') {
+        if (effectiveHour % 4 === 3) return true;
+      }
+      
+      // 2. ACL 36-40 (including B variations): Every 2 hours (00, 02, 04, 06, etc.)
+      const hourlyMatch = alias.match(/^acl(3[6-9]|40)b?$/);
+      if (hourlyMatch) {
+        if (effectiveHour % 2 === 0) return true;
+      }
     }
     
     // 3. All servers globally seem to have a daily restart at 07:00 AM UK
