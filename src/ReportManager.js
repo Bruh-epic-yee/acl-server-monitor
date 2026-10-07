@@ -157,8 +157,13 @@ export class ReportManager {
     if (!this.db) return [];
     
     const results = await this.db.all(`
-      SELECT id, timestamp, reporter_id, reported_reason, reporter_nickname
-      FROM reports
+      SELECT 
+        id, 
+        timestamp, 
+        reporter_id, 
+        reported_reason, 
+        (SELECT reported_nickname FROM reports WHERE reported_id = r.reporter_id LIMIT 1) as reporter_nickname
+      FROM reports r
       WHERE reported_id = ?
         AND server_id = ?
         AND timestamp >= ? 
