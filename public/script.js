@@ -235,9 +235,76 @@ document.addEventListener('DOMContentLoaded', () => {
         html += '<tr><td colspan="2" style="text-align:center; padding: 20px;">No server breakdown found for this driver in the selected timeframe.</td></tr>';
       } else {
         data.forEach((server) => {
-          html += `<tr>
+          html += `<tr class="server-row" style="cursor:pointer;" onclick="toggleServerDetails('${driverId}', '${server.server_id}', this)">
             <td class="player-nick">${escapeHtml(server.server_name)}</td>
             <td class="report-count">${server.report_count}</td>
+          </tr>`;
+        });
+      }
+      html += '</tbody></table>';
+      td.querySelector('.expanded-content').innerHTML = html;
+      
+    } catch (err) {
+      td.querySelector('.expanded-content').innerHTML = `<div style="color:var(--accent-2); text-align:center;">Failed to load data</div>`;
+      console.error(err);
+    }
+  };
+
+  window.toggleServerDetails = async (driverId, serverId, rowElement) => {
+    const nextRow = rowElement.nextElementSibling;
+    if (nextRow && nextRow.classList.contains('expanded-server-details')) {
+      nextRow.remove();
+      return;
+    }
+    
+    // Close other expanded server rows within this driver's details
+    rowElement.parentElement.querySelectorAll('.expanded-server-details').forEach(el => el.remove());
+    
+    const detailsRow = document.createElement('tr');
+    detailsRow.className = 'expanded-server-details';
+    const td = document.createElement('td');
+    td.colSpan = 2;
+    td.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+    td.style.borderLeft = '3px solid var(--accent-1)';
+    td.innerHTML = `<div class="expanded-content" style="padding: 10px;">
+      <div class="spinner"></div>
+    </div>`;
+    detailsRow.appendChild(td);
+    rowElement.after(detailsRow);
+    
+    try {
+      let query = `?driverId=${encodeURIComponent(driverId)}&serverId=${encodeURIComponent(serverId)}&timeframe=${currentTimeframe}`;
+      if (currentStartDate && currentEndDate) {
+        query += `&startDate=${currentStartDate}&endDate=${currentEndDate}`;
+      }
+      
+      if (currentTab === 'danger-cheating') query += `&reason=CHEATING`;
+      if (currentTab === 'danger-bad') query += `&reason=BAD%20BEHAVIOR`;
+      
+      const res = await fetch(`/api/driver-server-reports${query}`);
+      if (!res.ok) throw new Error('Failed to fetch data');
+      const data = await res.json();
+      
+      let html = `<table class="sub-table" style="margin: 0; background: transparent; box-shadow: none;">
+        <thead>
+          <tr>
+            <th style="padding: 5px 10px; font-size: 0.8rem;">Date & Time</th>
+            <th style="padding: 5px 10px; font-size: 0.8rem;">Reporter</th>
+            <th style="padding: 5px 10px; font-size: 0.8rem;">Reason</th>
+          </tr>
+        </thead>
+        <tbody>`;
+        
+      if (data.length === 0) {
+        html += '<tr><td colspan="3" style="text-align:center; padding: 10px;">No specific reports found.</td></tr>';
+      } else {
+        data.forEach((report) => {
+          const dt = new Date(report.timestamp);
+          const dateStr = dt.toLocaleString();
+          html += `<tr>
+            <td style="padding: 5px 10px; font-size: 0.85rem; color: var(--text-muted);">${dateStr}</td>
+            <td style="padding: 5px 10px; font-size: 0.85rem;" class="player-nick">${escapeHtml(report.reporter_nickname || report.reporter_id)}</td>
+            <td style="padding: 5px 10px; font-size: 0.85rem; color: var(--accent-1);">${escapeHtml(report.reported_reason || 'N/A')}</td>
           </tr>`;
         });
       }

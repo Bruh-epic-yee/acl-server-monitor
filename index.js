@@ -295,6 +295,25 @@ app.get('/api/driver-breakdown', async (req, res) => {
   }
 });
 
+app.get('/api/driver-server-reports', async (req, res) => {
+  try {
+    const { sinceDate, endDate } = getDateBounds(req);
+    const reason = req.query.reason || null;
+    const driverId = req.query.driverId;
+    const serverId = req.query.serverId;
+    
+    if (!driverId || !serverId) {
+      return res.status(400).json({ error: "Missing driverId or serverId parameter" });
+    }
+    
+    const results = await manager.reportManager.getDriverServerReports(driverId, serverId, sinceDate, endDate, reason);
+    res.json(results);
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🌐 Dashboard web server listening on port ${PORT}`);
   console.log(`✅ App started! View the dashboard at http://localhost:${PORT}`);

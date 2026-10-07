@@ -153,6 +153,23 @@ export class ReportManager {
     return results;
   }
 
+  async getDriverServerReports(driverId, serverId, sinceDate, endDate = null, reason = null) {
+    if (!this.db) return [];
+    
+    const results = await this.db.all(`
+      SELECT id, timestamp, reporter_id, reported_reason, reporter_nickname
+      FROM reports
+      WHERE reported_id = ?
+        AND server_id = ?
+        AND timestamp >= ? 
+        AND (? IS NULL OR timestamp < ?)
+        AND (? IS NULL OR reported_reason = ?)
+      ORDER BY timestamp DESC
+    `, [driverId, serverId, sinceDate, endDate, endDate, reason, reason]);
+    
+    return results;
+  }
+
   async getReporters(sinceDate, endDate = null, reason = null) {
     if (!this.db) return [];
     
